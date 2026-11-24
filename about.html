@@ -266,7 +266,7 @@
                             </tr>
                             <tr>
                                 <td class="form-grid-header">Measurer</td>
-                                <td class="text-center text-[11px]" colspan="2" id="specInstrumentCell">Digital Micrometer (0-25mm)</td>
+                                <td class="text-center text-[11px]" colspan="2" id="specInstrumentCell">Micrometer</td>
                             </tr>
                             <tr>
                                 <td class="form-grid-header">Unit</td>
@@ -296,7 +296,7 @@
                 <!-- 3. SUBGROUP MEASUREMENT DATA TABLE (Columns 1 to 25) -->
                 <div class="lg:col-span-9 flex flex-col">
                     <div class="flex justify-between items-center mb-1">
-                        <span class="text-xs font-bold text-slate-900">3. ข้อมูลการตรวจวัดรายกลุ่มตัวอย่าง (Subgroup Data Matrix: n = 5, 4 ครั้ง/วัน)</span>
+                        <span class="text-xs font-bold text-slate-900">3. ข้อมูลการตรวจวัดรายกลุ่มตัวอย่าง (Subgroup Data Matrix: n = 5, ทุก 2 ชม. เริ่ม 08:10)</span>
                         <span class="text-[11px] text-slate-500">สรุปล่าสุดสูงสุด 25 กลุ่มตัวอย่าง (Subgroups 1–25)</span>
                     </div>
                     <div class="overflow-x-auto flex-1">
@@ -460,12 +460,12 @@
             </button>
         </div>
 
-        <!-- Data Entry Form (4 Checks per Day - QC & PD) (Screen Only) -->
+        <!-- Data Entry Form (Every 2 Hours Starting 08:10 - QC & PD) (Screen Only) -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 no-print">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
                 <h3 class="font-bold text-slate-800 text-base">
                     <i class="fa-solid fa-pen-to-square text-blue-600 mr-1"></i> 
-                    <span id="formTitle">บันทึกผลการตรวจสอบประจำวัน (4 ครั้ง/วัน - IATF 16949)</span>
+                    <span id="formTitle">บันทึกผลการตรวจสอบประจำวัน (ทุก 2 ชม. เริ่ม 08:10 - IATF 16949)</span>
                 </h3>
                 <button type="button" id="btnCancelEdit" onclick="resetForm()" class="hidden text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1 rounded">
                     ยกเลิกการแก้ไข
@@ -481,12 +481,20 @@
                         <input type="date" id="prodDate" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">ช่วงเวลาตรวจ (4 ครั้ง/วัน) *</label>
-                        <select id="checkSlot" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                            <option value="ครั้งที่ 1 (08:30 - กะเช้าเริ่มงาน)">ครั้งที่ 1 (08:30 - กะเช้าเริ่มงาน)</option>
-                            <option value="ครั้งที่ 2 (13:30 - กะเช้าช่วงบ่าย)">ครั้งที่ 2 (13:30 - กะเช้าช่วงบ่าย)</option>
-                            <option value="ครั้งที่ 3 (20:30 - กะดึกเริ่มงาน)">ครั้งที่ 3 (20:30 - กะดึกเริ่มงาน)</option>
-                            <option value="ครั้งที่ 4 (01:30 - กะดึกช่วงหลัง)">ครั้งที่ 4 (01:30 - กะดึกช่วงหลัง)</option>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">เวลาตรวจ (ทุก 2 ชม. เริ่ม 08:10) *</label>
+                        <select id="checkSlot" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white font-mono">
+                            <option value="08:10">08:10</option>
+                            <option value="10:10">10:10</option>
+                            <option value="12:10">12:10</option>
+                            <option value="14:10">14:10</option>
+                            <option value="16:10">16:10</option>
+                            <option value="18:10">18:10</option>
+                            <option value="20:10">20:10</option>
+                            <option value="22:10">22:10</option>
+                            <option value="00:10">00:10</option>
+                            <option value="02:10">02:10</option>
+                            <option value="04:10">04:10</option>
+                            <option value="06:10">06:10</option>
                         </select>
                     </div>
                     <div>
@@ -557,7 +565,7 @@
                         <tr class="bg-slate-100 text-slate-700 border-b border-slate-200 text-xs uppercase">
                             <th class="py-2.5 px-3">ลำดับ</th>
                             <th class="py-2.5 px-3">วันที่ผลิต</th>
-                            <th class="py-2.5 px-3">รอบการตรวจ (4 ครั้ง/วัน)</th>
+                            <th class="py-2.5 px-3">เวลาตรวจ</th>
                             <th class="py-2.5 px-3">Lot / MC</th>
                             <th class="py-2.5 px-3">ผู้บันทึก (Dept)</th>
                             <th class="py-2.5 px-3 text-center">ค่าที่วัด (X1 - X5)</th>
@@ -617,7 +625,11 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">เครื่องมือวัดที่ใช้ (Inspection Instrument) *</label>
-                    <input type="text" id="cfgInstrument" required placeholder="เช่น Digital Micrometer (0-25mm)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                    <select id="cfgInstrument" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+                        <option value="Micrometer">Micrometer</option>
+                        <option value="Vernier Caliper">Vernier Caliper</option>
+                        <option value="Profile Projector">Profile Projector</option>
+                    </select>
                 </div>
 
                 <!-- Spec & Tolerance (+ / -) Box -->
@@ -850,7 +862,7 @@
                 code: "040160-C62T-TZ",
                 name: "PH/W T/S.2 TORX (SPECIAL)",
                 scItem: "SC-OD",
-                instrument: "Digital Micrometer (0-25mm)",
+                instrument: "Micrometer",
                 nominal: 4.00,
                 plusTol: 0.18,
                 minusTol: 0,
@@ -863,7 +875,7 @@
                 code: "HN-97702-B200",
                 name: "HV A/C Valve Housing Screw",
                 scItem: "SC-02: Pitch Diameter M6",
-                instrument: "Thread Micrometer / Ring Gauge",
+                instrument: "Micrometer",
                 nominal: 5.35,
                 plusTol: 0.05,
                 minusTol: 0.05,
@@ -876,7 +888,7 @@
                 code: "HN-97703-C300",
                 name: "Thermal Expansion Pin",
                 scItem: "SC-03: Outer Diameter Ø",
-                instrument: "Laser Micrometer / Air Gauge",
+                instrument: "Micrometer",
                 nominal: 8.00,
                 plusTol: 0.03,
                 minusTol: 0.03,
@@ -889,7 +901,7 @@
                 code: "HN-97704-D400",
                 name: "Condenser Bracket Stud",
                 scItem: "SC-04: Flange Thickness",
-                instrument: "Digital Vernier Caliper",
+                instrument: "Vernier Caliper",
                 nominal: 3.20,
                 plusTol: 0.10,
                 minusTol: 0.10,
@@ -902,7 +914,7 @@
                 code: "HN-97705-E500",
                 name: "E-Compressor Shaft Nut",
                 scItem: "SC-05: Perpendicularity / Height",
-                instrument: "Profile Projector QM-Data 200",
+                instrument: "Profile Projector",
                 nominal: 10.50,
                 plusTol: 0.08,
                 minusTol: 0.08,
@@ -922,23 +934,23 @@
         };
 
         const defaultRecords = [
-            { id: "REC-01", partCode: "040160-C62T-TZ", date: "2026-11-19", slot: "ครั้งที่ 1 (08:30 - กะเช้าเริ่มงาน)", dept: "PD (Production)", inspector: "สมชาย (PD)", lotNo: "MC01-261119A", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
-            { id: "REC-02", partCode: "040160-C62T-TZ", date: "2026-11-19", slot: "ครั้งที่ 2 (13:30 - กะเช้าช่วงบ่าย)", dept: "QC (Quality Control)", inspector: "พรทิพย์ (QC)", lotNo: "MC01-261119A", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
-            { id: "REC-03", partCode: "040160-C62T-TZ", date: "2026-11-19", slot: "ครั้งที่ 3 (20:30 - กะดึกเริ่มงาน)", dept: "PD (Production)", inspector: "วิชัย (PD)", lotNo: "MC01-261119B", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
-            { id: "REC-04", partCode: "040160-C62T-TZ", date: "2026-11-19", slot: "ครั้งที่ 4 (01:30 - กะดึกช่วงหลัง)", dept: "QC (Quality Control)", inspector: "ชนัญชิดา (QC)", lotNo: "MC01-261119B", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
-            { id: "REC-05", partCode: "040160-C62T-TZ", date: "2026-11-20", slot: "ครั้งที่ 1 (08:30 - กะเช้าเริ่มงาน)", dept: "PD (Production)", inspector: "สมชาย (PD)", lotNo: "MC01-261120A", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
-            { id: "REC-06", partCode: "040160-C62T-TZ", date: "2026-11-20", slot: "ครั้งที่ 2 (13:30 - กะเช้าช่วงบ่าย)", dept: "QC (Quality Control)", inspector: "พรทิพย์ (QC)", lotNo: "MC01-261120A", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
-            { id: "REC-07", partCode: "040160-C62T-TZ", date: "2026-11-20", slot: "ครั้งที่ 3 (20:30 - กะดึกเริ่มงาน)", dept: "PD (Production)", inspector: "วิชัย (PD)", lotNo: "MC01-261120B", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
-            { id: "REC-08", partCode: "040160-C62T-TZ", date: "2026-11-20", slot: "ครั้งที่ 4 (01:30 - กะดึกช่วงหลัง)", dept: "QC (Quality Control)", inspector: "ชนัญชิดา (QC)", lotNo: "MC01-261120B", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null }
+            { id: "REC-01", partCode: "040160-C62T-TZ", date: "2026-11-19", slot: "08:10", dept: "PD (Production)", inspector: "สมชาย (PD)", lotNo: "MC01-261119A", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
+            { id: "REC-02", partCode: "040160-C62T-TZ", date: "2026-11-19", slot: "10:10", dept: "QC (Quality Control)", inspector: "พรทิพย์ (QC)", lotNo: "MC01-261119A", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
+            { id: "REC-03", partCode: "040160-C62T-TZ", date: "2026-11-19", slot: "12:10", dept: "PD (Production)", inspector: "วิชัย (PD)", lotNo: "MC01-261119B", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
+            { id: "REC-04", partCode: "040160-C62T-TZ", date: "2026-11-19", slot: "14:10", dept: "QC (Quality Control)", inspector: "ชนัญชิดา (QC)", lotNo: "MC01-261119B", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
+            { id: "REC-05", partCode: "040160-C62T-TZ", date: "2026-11-20", slot: "08:10", dept: "PD (Production)", inspector: "สมชาย (PD)", lotNo: "MC01-261120A", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
+            { id: "REC-06", partCode: "040160-C62T-TZ", date: "2026-11-20", slot: "10:10", dept: "QC (Quality Control)", inspector: "พรทิพย์ (QC)", lotNo: "MC01-261120A", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
+            { id: "REC-07", partCode: "040160-C62T-TZ", date: "2026-11-20", slot: "12:10", dept: "PD (Production)", inspector: "วิชัย (PD)", lotNo: "MC01-261120B", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
+            { id: "REC-08", partCode: "040160-C62T-TZ", date: "2026-11-20", slot: "14:10", dept: "QC (Quality Control)", inspector: "ชนัญชิดา (QC)", lotNo: "MC01-261120B", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null }
         ];
 
         // ==========================================
         // 2. LOAD STATE FROM LOCAL STORAGE
         // ==========================================
-        let partConfigs = JSON.parse(localStorage.getItem('hanon_spc_parts_v4')) || defaultPartConfigs;
-        let companySettings = JSON.parse(localStorage.getItem('hanon_spc_company_v4')) || defaultCompanySettings;
-        let spcRecords = JSON.parse(localStorage.getItem('hanon_spc_records_v4')) || defaultRecords;
-        let partDrawings = JSON.parse(localStorage.getItem('hanon_spc_drawings_v4')) || {};
+        let partConfigs = JSON.parse(localStorage.getItem('hanon_spc_parts_v5')) || defaultPartConfigs;
+        let companySettings = JSON.parse(localStorage.getItem('hanon_spc_company_v5')) || defaultCompanySettings;
+        let spcRecords = JSON.parse(localStorage.getItem('hanon_spc_records_v5')) || defaultRecords;
+        let partDrawings = JSON.parse(localStorage.getItem('hanon_spc_drawings_v5')) || {};
 
         let currentPartIndex = 0;
         let xbarChartInstance = null;
@@ -972,9 +984,9 @@
         window.addEventListener('afterprint', resizeAllCharts);
 
         function saveAllToStorage() {
-            localStorage.setItem('hanon_spc_parts_v4', JSON.stringify(partConfigs));
-            localStorage.setItem('hanon_spc_company_v4', JSON.stringify(companySettings));
-            localStorage.setItem('hanon_spc_records_v4', JSON.stringify(spcRecords));
+            localStorage.setItem('hanon_spc_parts_v5', JSON.stringify(partConfigs));
+            localStorage.setItem('hanon_spc_company_v5', JSON.stringify(companySettings));
+            localStorage.setItem('hanon_spc_records_v5', JSON.stringify(spcRecords));
         }
 
         // ==========================================
@@ -1068,6 +1080,7 @@
                 document.getElementById('partModalTitle').textContent = 'เพิ่ม Part Code ใหม่ (Hanon Systems)';
                 document.getElementById('partForm').reset();
                 document.getElementById('cfgUnit').value = 'mm';
+                document.getElementById('cfgInstrument').value = 'Micrometer';
                 document.getElementById('previewUslLsl').textContent = 'LSL = 0.000 | USL = 0.000';
                 deleteBtn.classList.add('hidden');
             } else {
@@ -1135,7 +1148,7 @@
                 name: document.getElementById('cfgPartName').value.trim(),
                 scItem: document.getElementById('cfgScItem').value.trim(),
                 unit: document.getElementById('cfgUnit').value.trim(),
-                instrument: document.getElementById('cfgInstrument').value.trim(),
+                instrument: document.getElementById('cfgInstrument').value,
                 nominal: parseFloat(document.getElementById('cfgNominal').value),
                 plusTol: parseFloat(document.getElementById('cfgPlusTol').value),
                 minusTol: parseFloat(document.getElementById('cfgMinusTol').value),
@@ -1159,7 +1172,7 @@
                     if (partDrawings[oldCode]) {
                         partDrawings[newPartData.code] = partDrawings[oldCode];
                         delete partDrawings[oldCode];
-                        localStorage.setItem('hanon_spc_drawings_v4', JSON.stringify(partDrawings));
+                        localStorage.setItem('hanon_spc_drawings_v5', JSON.stringify(partDrawings));
                     }
                 }
             }
@@ -1368,9 +1381,9 @@
             } else {
                 const notes = outRecords.map(r => {
                     if (r.action) {
-                        return `[${r.date} ${r.slot.slice(0, 10)}] ${r.action.rootCause.split(':')[0]} -> ${r.action.detail} (Re-check: ${r.action.recheckVal})`;
+                        return `[${r.date} ${r.slot}] ${r.action.rootCause.split(':')[0]} -> ${r.action.detail} (Re-check: ${r.action.recheckVal})`;
                     }
-                    return `[${r.date} ${r.slot.slice(0, 10)}] พบค่าหลุดเกณฑ์ (รอ Action Plan)`;
+                    return `[${r.date} ${r.slot}] พบค่าหลุดเกณฑ์ (รอ Action Plan)`;
                 });
                 printSummaryEl.textContent = notes.join(" | ");
             }
@@ -1390,12 +1403,11 @@
             for (let i = 1; i <= totalCols; i++) {
                 html += `<th class="min-w-[32px]">${i}</th>`;
             }
-            html += `</tr><tr class="form-grid-sub"><th colspan="2">วันที่ / รอบ</th>`;
+            html += `</tr><tr class="form-grid-sub"><th colspan="2">วันที่ / เวลา</th>`;
             for (let i = 0; i < totalCols; i++) {
                 const rec = recent[i];
                 if (rec) {
-                    const slotNum = rec.slot.match(/ครั้งที่ (\d)/)?.[1] || '';
-                    html += `<td class="text-[9px] leading-tight">${rec.date.slice(5)}<br><span class="text-slate-500">#${slotNum}</span></td>`;
+                    html += `<td class="text-[9px] leading-tight">${rec.date.slice(5)}<br><span class="text-slate-600 font-semibold">${rec.slot}</span></td>`;
                 } else {
                     html += `<td class="text-slate-300">-</td>`;
                 }
@@ -1468,7 +1480,6 @@
                 const stats = calculateStats(rec.samples, part);
                 const rowBg = stats.isOut ? (rec.action ? 'bg-amber-50/60' : 'bg-red-50') : 'hover:bg-slate-50';
                 
-                // Show Action Plan button ONLY when out of control/spec
                 let actionCell = `<span class="text-xs text-slate-400">-</span>`;
                 if (stats.isOut) {
                     if (rec.action) {
@@ -1490,7 +1501,7 @@
                     <tr class="${rowBg} transition">
                         <td class="py-2 px-3 font-mono font-bold text-slate-500">#${index + 1}</td>
                         <td class="py-2 px-3 font-medium whitespace-nowrap">${rec.date}</td>
-                        <td class="py-2 px-3 text-xs">${rec.slot}</td>
+                        <td class="py-2 px-3 font-mono text-xs font-semibold">${rec.slot}</td>
                         <td class="py-2 px-3 text-xs font-mono">${rec.lotNo}</td>
                         <td class="py-2 px-3 text-xs">
                             <span class="font-semibold">${rec.inspector}</span> <span class="text-slate-500">(${rec.dept.split(' ')[0]})</span>
@@ -1835,7 +1846,8 @@
             document.getElementById('spcForm').reset();
             document.getElementById('editRecordId').value = '';
             document.getElementById('prodDate').valueAsDate = new Date();
-            document.getElementById('formTitle').textContent = 'บันทึกผลการตรวจสอบประจำวัน (4 ครั้ง/วัน - IATF 16949)';
+            document.getElementById('checkSlot').value = '08:10';
+            document.getElementById('formTitle').textContent = 'บันทึกผลการตรวจสอบประจำวัน (ทุก 2 ชม. เริ่ม 08:10 - IATF 16949)';
             document.getElementById('btnSubmitForm').innerHTML = `<i class="fa-solid fa-save mr-1"></i> บันทึกข้อมูลการตรวจ`;
             document.getElementById('btnSubmitForm').classList.replace('bg-amber-600', 'bg-blue-700');
             document.getElementById('btnCancelEdit').classList.add('hidden');
@@ -1860,7 +1872,7 @@
 
             document.getElementById('actionIssueSummary').innerHTML = `
                 <div><strong>Part Code:</strong> ${part.code} (${part.scItem})</div>
-                <div><strong>วันที่/รอบตรวจ:</strong> ${rec.date} | ${rec.slot} (Lot: ${rec.lotNo})</div>
+                <div><strong>วันที่/เวลาตรวจ:</strong> ${rec.date} | ${rec.slot} (Lot: ${rec.lotNo})</div>
                 <div><strong>ค่าที่วัดได้:</strong> X-bar = <span class="font-bold underline">${stats.xbar.toFixed(3)}</span> (Spec: ${lsl} - ${usl}), R = <span class="font-bold underline">${stats.r.toFixed(3)}</span> (Max: ${part.uclR})</div>
                 <div><strong>สาเหตุที่ระบบตรวจพบ:</strong> ${stats.reason}</div>
             `;
@@ -1923,7 +1935,7 @@
                     dataUrl: e.target.result
                 };
                 try {
-                    localStorage.setItem('hanon_spc_drawings_v4', JSON.stringify(partDrawings));
+                    localStorage.setItem('hanon_spc_drawings_v5', JSON.stringify(partDrawings));
                 } catch (err) {
                     alert("ไฟล์ขนาดใหญ่เกินกว่าจะบันทึกลง LocalStorage ถาวร แต่สามารถเปิดดูในเซสชันนี้ได้ทันที");
                 }
@@ -1980,8 +1992,8 @@
 
             let csv = "\uFEFF";
             csv += `Doc No,${companySettings.docNo},Rev Date,${companySettings.revDate},Rev,${companySettings.revNo}\n`;
-            csv += `Part Code,${part.code},Part Name,${part.name},Spec,${part.nominal} (+${part.plusTol}/-${part.minusTol}),USL,${usl},LSL,${lsl},UCL_X,${part.uclX},LCL_X,${part.lclX},UCL_R,${part.uclR}\n\n`;
-            csv += `Production Date,Check Slot (4/Day),Lot No,Department,Inspector,X1,X2,X3,X4,X5,X-bar,Range (R),Status,Root Cause,Corrective Action,Containment,Re-check Value,Action By,QC Verified By\n`;
+            csv += `Part Code,${part.code},Part Name,${part.name},Measurer,${part.instrument},Spec,${part.nominal} (+${part.plusTol}/-${part.minusTol}),USL,${usl},LSL,${lsl},UCL_X,${part.uclX},LCL_X,${part.lclX},UCL_R,${part.uclR}\n\n`;
+            csv += `Production Date,Check Time (Every 2h from 08:10),Lot No,Department,Inspector,X1,X2,X3,X4,X5,X-bar,Range (R),Status,Root Cause,Corrective Action,Containment,Re-check Value,Action By,QC Verified By\n`;
 
             filtered.forEach(r => {
                 const stats = calculateStats(r.samples, part);
