@@ -1,0 +1,2007 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process Capability Study & SPC Monitoring (X-bar, R & Histogram) | THB-GD-15-01</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js & Annotation Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Sarabun -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f1f5f9; }
+        .tab-active { background-color: #1e3a8a; color: white; border-bottom: 4px solid #3b82f6; }
+        .tab-inactive { background-color: #ffffff; color: #475569; }
+        .tab-inactive:hover { background-color: #f8fafc; }
+        .status-ok { background-color: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .status-ng { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.75; }
+        }
+
+        /* Formal Engineering Form Table Borders (Matches Screenshot Layout) */
+        .form-grid-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .form-grid-table th, .form-grid-table td {
+            border: 1px solid #334155;
+            padding: 3px 5px;
+        }
+        .form-grid-header {
+            background-color: #e2e8f0;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .form-grid-sub {
+            background-color: #f1f5f9;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        /* Strict 1-Page A3 Landscape Print Rules Matching Screenshot */
+        @media print {
+            @page {
+                size: A3 landscape;
+                margin: 4mm 6mm;
+            }
+            html, body {
+                width: 408mm !important;
+                height: 289mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background-color: #ffffff !important;
+                font-size: 9px !important;
+                line-height: 1.15 !important;
+                overflow: hidden !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            main {
+                margin: 0 !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+            .no-print { display: none !important; }
+            .print-only { display: inline !important; }
+            .print-flex { display: flex !important; }
+
+            .print-sheet {
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 288mm !important;
+                max-height: 288mm !important;
+                margin: 0 !important;
+                padding: 1.5mm 2mm !important;
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                overflow: hidden !important;
+                page-break-before: avoid !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            .print-sheet > * {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Force exact 12-col desktop grid proportions on A3 landscape print */
+            .print-upper-grid {
+                display: grid !important;
+                grid-template-columns: 24% 75% !important;
+                gap: 1% !important;
+                align-items: stretch !important;
+            }
+            .print-lower-grid {
+                display: grid !important;
+                grid-template-columns: 16% 33% 49% !important;
+                gap: 1% !important;
+                align-items: stretch !important;
+            }
+
+            .form-grid-table th, .form-grid-table td {
+                padding: 1.5px 2px !important;
+                font-size: 7.8px !important;
+                border-color: #1e293b !important;
+            }
+            .hist-chart-box {
+                height: 225px !important;
+                max-height: 225px !important;
+            }
+            .spc-chart-box {
+                height: 108px !important;
+                max-height: 108px !important;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Top Navigation Bar (Screen Only) -->
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40 no-print">
+        <div class="max-w-[1440px] mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 p-2 rounded-lg">
+                    <i class="fa-solid fa-chart-column text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-wide">PROCESS CAPABILITY STUDY & SPC MONITORING</h1>
+                    <p class="text-xs text-slate-300">Customer: <span class="font-semibold text-blue-300">HANON SYSTEMS</span> | IATF 16949:2016 (X-bar, R Chart & Histogram)</p>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+                <button onclick="openCompanySettingsModal()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded font-medium transition border border-slate-600">
+                    <i class="fa-solid fa-building text-amber-400 mr-1"></i> โลโก้ & เลขเอกสาร
+                </button>
+                <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded font-medium transition shadow">
+                    <i class="fa-solid fa-print mr-1"></i> พิมพ์สรุป 1 หน้า (A3)
+                </button>
+                <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded font-medium transition shadow">
+                    <i class="fa-solid fa-file-excel mr-1"></i> Export CSV
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-[1440px] mx-auto px-4 py-4 space-y-4">
+
+        <!-- Part Code Selector Bar + Drawing & Part Config Buttons (Screen Only) -->
+        <div class="bg-white rounded-xl shadow-sm p-3 border border-slate-200 no-print">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-2 pb-2 border-b border-slate-100">
+                <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                    <i class="fa-solid fa-layer-group text-blue-600 mr-1"></i> เลือกรหัสชิ้นงาน (Part Code List: <span id="totalPartsCount">5</span> รายการ)
+                </span>
+                <div class="flex flex-wrap items-center gap-2">
+                    <!-- Drawing Reference Controls -->
+                    <div class="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded border border-slate-300 text-xs">
+                        <i class="fa-solid fa-compass-drafting text-blue-600"></i>
+                        <span id="drawingFileName" class="truncate max-w-[140px] text-slate-600">ยังไม่แนบ Drawing</span>
+                        <label class="cursor-pointer bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-2 py-0.5 rounded font-medium">
+                            แนบไฟล์
+                            <input type="file" id="drawingInput" accept=".pdf,image/*" class="hidden" onchange="handleDrawingUpload(event)">
+                        </label>
+                        <button id="btnViewDrawing" onclick="openDrawingModal()" disabled class="bg-blue-600 disabled:bg-slate-300 hover:bg-blue-700 text-white px-2 py-0.5 rounded font-medium">
+                            ดูแบบ
+                        </button>
+                    </div>
+
+                    <button onclick="openPartModal('edit')" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded text-xs font-semibold transition shadow-sm">
+                        <i class="fa-solid fa-sliders mr-1"></i> แก้ไข Spec / UCL-LCL
+                    </button>
+                    <button onclick="openPartModal('add')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-semibold transition shadow-sm">
+                        <i class="fa-solid fa-plus mr-1"></i> เพิ่ม Part Code
+                    </button>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2" id="partTabs">
+                <!-- Tabs rendered by JS -->
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- 1-PAGE A3 LANDSCAPE PRINTABLE SUMMARY SHEET (MATCHES SCREENSHOT)       -->
+        <!-- ===================================================================== -->
+        <section id="printableReportArea" class="print-sheet bg-white p-4 rounded-xl shadow-sm border border-slate-300 space-y-2">
+
+            <!-- TOP BANNER: Logo + Company Name | Underlined Title + SC Item | Top-Right Doc Box -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b-2 border-slate-800 pb-1.5">
+                <!-- Left: Company Logo + Company Name -->
+                <div class="flex items-center gap-2.5">
+                    <img id="docLogoImg" src="" alt="Company Logo" class="hidden max-h-10 max-w-[95px] object-contain">
+                    <div id="docLogoPlaceholder" class="w-9 h-9 rounded bg-blue-900 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                        THB
+                    </div>
+                    <div>
+                        <div id="docCompanyName" class="font-bold text-sm text-slate-900 leading-tight">THAI HANSUNG BOLT CO., LTD.</div>
+                        <div class="text-[11px] text-slate-600">Customer: <strong class="text-blue-800">HANON SYSTEMS</strong> | IATF 16949 Special Characteristic (SC)</div>
+                    </div>
+                </div>
+
+                <!-- Center: Main Form Title -->
+                <div class="text-center">
+                    <h2 class="text-base sm:text-lg font-extrabold text-slate-900 tracking-wider underline decoration-2 underline-offset-4">
+                        PROCESS CAPABILITY STUDY & SPC CHART (A3 SUMMARY)
+                    </h2>
+                    <div class="text-[11px] font-semibold text-slate-700 mt-0.5">
+                        จุดควบคุม (SC Item): <span id="headerScItem" class="text-blue-800">SC-OD</span>
+                    </div>
+                </div>
+
+                <!-- Right: Top-Right Document Control Box -->
+                <div class="border border-slate-800 text-[10px] bg-slate-50 min-w-[180px] self-end md:self-auto">
+                    <div class="flex justify-between px-2 py-0.5 border-b border-slate-800">
+                        <span class="font-semibold text-slate-600">Doc No:</span>
+                        <span class="font-bold font-mono text-slate-900" id="metaDocNo">THB-GD-15-01</span>
+                    </div>
+                    <div class="flex justify-between px-2 py-0.5 border-b border-slate-800">
+                        <span class="font-semibold text-slate-600">Rev date:</span>
+                        <span class="font-bold font-mono text-slate-900" id="metaRevDate">2026-11-20</span>
+                    </div>
+                    <div class="flex justify-between px-2 py-0.5">
+                        <span class="font-semibold text-slate-600">Rev:</span>
+                        <span class="font-bold font-mono text-slate-900" id="metaRevNo">00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UPPER SECTION: [Left: 1. Specification] + [Right: 3. Subgroup Data Matrix 1..25] -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-stretch print-upper-grid">
+                
+                <!-- 1. SPECIFICATION TABLE -->
+                <div class="lg:col-span-3 flex flex-col">
+                    <div class="text-xs font-bold text-slate-900 mb-1">1. Specification</div>
+                    <table class="form-grid-table text-xs flex-1">
+                        <tbody>
+                            <tr>
+                                <td class="form-grid-header w-[36%]" rowspan="2">Company<br>Name</td>
+                                <td class="text-center font-bold" colspan="2" id="specCompanyCell">THAI HANSUNG BOLT CO., LTD.</td>
+                            </tr>
+                            <tr>
+                                <td class="text-center text-[10px] text-slate-600" colspan="2">Customer: HANON SYSTEMS</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-header">Part Name</td>
+                                <td class="text-center font-semibold text-blue-900" colspan="2" id="specPartNameCell">PH/W T/S.2 TORX (SPECIAL)</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-header">Part No</td>
+                                <td class="text-center font-bold font-mono text-blue-900" colspan="2" id="specPartCodeCell">040160-C62T-TZ</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-header">Spec</td>
+                                <td class="text-center font-bold font-mono" colspan="2" id="specMainCell">4 (+0.18 / -0)</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-header">Measurer</td>
+                                <td class="text-center text-[11px]" colspan="2" id="specInstrumentCell">Digital Micrometer (0-25mm)</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-header">Unit</td>
+                                <td class="text-center font-mono" colspan="2" id="specUnitCell">mm</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-header" rowspan="4">Spec<br>Limits</td>
+                                <td class="form-grid-sub w-[32%] text-center">Nominal</td>
+                                <td class="text-right font-mono font-bold" id="specNominalCell">4.000</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-sub text-center text-red-700">+Tol (USL)</td>
+                                <td class="text-right font-mono font-bold text-red-700" id="specUslCell">4.180</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-sub text-center text-red-700">-Tol (LSL)</td>
+                                <td class="text-right font-mono font-bold text-red-700" id="specLslCell">4.000</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-sub text-center">Tolerance</td>
+                                <td class="text-center font-semibold text-[11px]" id="specTolTypeCell">พิกัดด้านเดียว (Unilateral)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 3. SUBGROUP MEASUREMENT DATA TABLE (Columns 1 to 25) -->
+                <div class="lg:col-span-9 flex flex-col">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-bold text-slate-900">3. ข้อมูลการตรวจวัดรายกลุ่มตัวอย่าง (Subgroup Data Matrix: n = 5, 4 ครั้ง/วัน)</span>
+                        <span class="text-[11px] text-slate-500">สรุปล่าสุดสูงสุด 25 กลุ่มตัวอย่าง (Subgroups 1–25)</span>
+                    </div>
+                    <div class="overflow-x-auto flex-1">
+                        <table class="form-grid-table text-[10px] text-center font-mono" id="matrixTable">
+                            <!-- Rendered dynamically by JS -->
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOWER SECTION: [Left: 2. Statistics Summary] + [Center: 4. Histogram] + [Right: 5. X-bar & R Control Charts] -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-stretch print-lower-grid">
+                
+                <!-- 2. STATISTICS SUMMARY & CONTROL LIMITS -->
+                <div class="lg:col-span-2 flex flex-col">
+                    <div class="text-xs font-bold text-slate-900 mb-1">2. สถิติสรุป (Summary)</div>
+                    <table class="form-grid-table text-[11px] flex-1">
+                        <tbody>
+                            <tr>
+                                <td class="form-grid-header" colspan="2">Est. Defect (%)</td>
+                                <td class="text-right font-mono font-bold" id="statDefectPct">0.0000%</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-header" colspan="2">Cpk</td>
+                                <td class="text-right font-mono font-bold text-blue-800" id="statCpk">∞</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-header" colspan="2">Cpl</td>
+                                <td class="text-right font-mono" id="statCpl">∞</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-header" colspan="2">Cpu</td>
+                                <td class="text-right font-mono" id="statCpu">∞</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-header" colspan="2">Cp</td>
+                                <td class="text-right font-mono" id="statCp">∞</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-header" colspan="2">Max (สูงสุด)</td>
+                                <td class="text-right font-mono" id="statMax">4.000</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-header" colspan="2">Min (ต่ำสุด)</td>
+                                <td class="text-right font-mono" id="statMin">4.000</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-header" colspan="2">X̿ (เฉลี่ยรวม)</td>
+                                <td class="text-right font-mono font-bold" id="statXDoubleBar">4.000</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-header" colspan="2">Std Dev (σ)</td>
+                                <td class="text-right font-mono" id="statSigma">0.0000</td>
+                            </tr>
+                            <!-- X-bar Control Limits -->
+                            <tr>
+                                <td class="form-grid-header text-center w-6" rowspan="3">X̄</td>
+                                <td class="form-grid-sub">UCL</td>
+                                <td class="text-right font-mono font-bold text-amber-800" id="statUclX">4.000</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-sub">CL</td>
+                                <td class="text-right font-mono" id="statClX">4.000</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-sub">LCL</td>
+                                <td class="text-right font-mono font-bold text-amber-800" id="statLclX">4.000</td>
+                            </tr>
+                            <!-- R Control Limits -->
+                            <tr>
+                                <td class="form-grid-header text-center" rowspan="3">R</td>
+                                <td class="form-grid-sub">UCL</td>
+                                <td class="text-right font-mono font-bold text-purple-800" id="statUclR">4.180</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-sub">CL (R̄)</td>
+                                <td class="text-right font-mono" id="statClR">0.000</td>
+                            </tr>
+                            <tr>
+                                <td class="form-grid-sub">LCL</td>
+                                <td class="text-right font-mono">0.000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 4. HISTOGRAM -->
+                <div class="lg:col-span-4 flex flex-col">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-bold text-slate-900">4. Histogram (การกระจายตัวของข้อมูล)</span>
+                        <span class="text-[10px] text-slate-500">เทียบเส้น LSL / USL</span>
+                    </div>
+                    <div class="border border-slate-700 p-1.5 bg-white flex-1 flex flex-col justify-between">
+                        <div class="relative h-64 hist-chart-box">
+                            <canvas id="histogramChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. X-BAR & R CONTROL CHARTS STACKED VERTICALLY -->
+                <div class="lg:col-span-6 flex flex-col">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-bold text-slate-900">5. X̄ - R Control Chart (แผนภูมิควบคุมค่าเฉลี่ยและพิสัย)</span>
+                        <span class="text-[10px] text-slate-500">แดง: USL/LSL | ส้มประ: UCL/LCL</span>
+                    </div>
+                    <div class="border border-slate-700 p-1.5 bg-white flex-1 flex flex-col justify-between gap-1">
+                        <!-- Top: X-bar Chart -->
+                        <div>
+                            <div class="text-[10px] font-bold text-blue-800 text-center">X-bar Chart (ค่าเฉลี่ย)</div>
+                            <div class="relative h-32 spc-chart-box">
+                                <canvas id="xbarChart"></canvas>
+                            </div>
+                        </div>
+                        <!-- Bottom: R Chart -->
+                        <div class="border-t border-slate-300 pt-0.5">
+                            <div class="text-[10px] font-bold text-purple-800 text-center">R Chart (ค่าพิสัย Range)</div>
+                            <div class="relative h-32 spc-chart-box">
+                                <canvas id="rChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Print Footer Signatures & Reaction Plan Summary -->
+            <div class="hidden print-flex justify-between items-end pt-1 border-t border-slate-700 text-[9px]">
+                <div class="max-w-[58%] truncate">
+                    <span class="font-bold">หมายเหตุ / Reaction Plan Summary:</span>
+                    <span id="printActionSummaryText" class="text-slate-700">กระบวนการอยู่ในเกณฑ์ควบคุมปกติ (In-Control)</span>
+                </div>
+                <div class="flex gap-6 text-center shrink-0">
+                    <div>
+                        <div class="border-b border-slate-800 w-24 h-3.5 mb-0.5"></div>
+                        <div>Prepared By (PD / QC)</div>
+                    </div>
+                    <div>
+                        <div class="border-b border-slate-800 w-24 h-3.5 mb-0.5"></div>
+                        <div>Checked By (QA/QC Supv.)</div>
+                    </div>
+                    <div>
+                        <div class="border-b border-slate-800 w-24 h-3.5 mb-0.5"></div>
+                        <div>Approved By (QA/QC Mgr.)</div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Alert Banner when Out of Control / Out of Spec occurs (Screen Only) -->
+        <div id="outOfControlBanner" class="hidden bg-red-600 text-white rounded-xl p-4 shadow-md flex flex-col sm:flex-row justify-between items-center gap-4 no-print">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-triangle-exclamation text-3xl text-yellow-300 animate-bounce"></i>
+                <div>
+                    <h3 class="font-bold text-base">แจ้งเตือน: พบค่าการวัดออกนอกเกณฑ์ควบคุม (Out of Control / Out of Spec)!</h3>
+                    <p class="text-xs text-red-100">ตามข้อกำหนด IATF 16949 ต้องทำการหยุดกระบวนการชั่วคราว คัดแยกงาน (Containment) และบันทึก Reaction Plan ทันที</p>
+                </div>
+            </div>
+            <button onclick="openLatestActionModal()" class="bg-white text-red-700 hover:bg-red-50 font-bold px-4 py-2 rounded-lg text-sm shadow whitespace-nowrap">
+                <i class="fa-solid fa-wrench mr-1"></i> บันทึก Action แก้ไขเดี๋ยวนี้
+            </button>
+        </div>
+
+        <!-- Data Entry Form (4 Checks per Day - QC & PD) (Screen Only) -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 no-print">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                <h3 class="font-bold text-slate-800 text-base">
+                    <i class="fa-solid fa-pen-to-square text-blue-600 mr-1"></i> 
+                    <span id="formTitle">บันทึกผลการตรวจสอบประจำวัน (4 ครั้ง/วัน - IATF 16949)</span>
+                </h3>
+                <button type="button" id="btnCancelEdit" onclick="resetForm()" class="hidden text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1 rounded">
+                    ยกเลิกการแก้ไข
+                </button>
+            </div>
+
+            <form id="spcForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                <input type="hidden" id="editRecordId" value="">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">วันที่ผลิต (Production Date) *</label>
+                        <input type="date" id="prodDate" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ช่วงเวลาตรวจ (4 ครั้ง/วัน) *</label>
+                        <select id="checkSlot" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="ครั้งที่ 1 (08:30 - กะเช้าเริ่มงาน)">ครั้งที่ 1 (08:30 - กะเช้าเริ่มงาน)</option>
+                            <option value="ครั้งที่ 2 (13:30 - กะเช้าช่วงบ่าย)">ครั้งที่ 2 (13:30 - กะเช้าช่วงบ่าย)</option>
+                            <option value="ครั้งที่ 3 (20:30 - กะดึกเริ่มงาน)">ครั้งที่ 3 (20:30 - กะดึกเริ่มงาน)</option>
+                            <option value="ครั้งที่ 4 (01:30 - กะดึกช่วงหลัง)">ครั้งที่ 4 (01:30 - กะดึกช่วงหลัง)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">หน่วยงานผู้บันทึก (Dept.) *</label>
+                        <select id="inspectorDept" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="PD (Production)">PD (Production)</option>
+                            <option value="QC (Quality Control)">QC (Quality Control)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อผู้บันทึก (Inspector Name) *</label>
+                        <input type="text" id="inspectorName" placeholder="ระบุชื่อพนักงาน" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Lot No. / Machine No. *</label>
+                        <input type="text" id="lotNo" placeholder="เช่น MC-01 / L261121" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+
+                <!-- 5 Sample Measurements (n=5) -->
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <label class="block text-xs font-bold text-slate-700 mb-2">
+                        ค่าที่วัดได้จริง 5 ชิ้นงาน (Subgroup Size n = 5) — <span class="font-normal text-slate-500" id="inputHint">Spec: 4.000 - 4.180</span>
+                    </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                        <div>
+                            <span class="text-xs text-slate-500">ชิ้นที่ 1 (X1)</span>
+                            <input type="number" step="0.0001" id="x1" required class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-500">ชิ้นที่ 2 (X2)</span>
+                            <input type="number" step="0.0001" id="x2" required class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-500">ชิ้นที่ 3 (X3)</span>
+                            <input type="number" step="0.0001" id="x3" required class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-500">ชิ้นที่ 4 (X4)</span>
+                            <input type="number" step="0.0001" id="x4" required class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-500">ชิ้นที่ 5 (X5)</span>
+                            <input type="number" step="0.0001" id="x5" required class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2">
+                    <button type="submit" id="btnSubmitForm" class="bg-blue-700 hover:bg-blue-800 text-white font-semibold px-6 py-2 rounded-lg text-sm shadow transition">
+                        <i class="fa-solid fa-save mr-1"></i> บันทึกข้อมูลการตรวจ
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Detailed Action & Management Log Table (Screen Only) -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden no-print">
+            <div class="p-3 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 bg-slate-50">
+                <h3 class="font-bold text-slate-800 text-sm sm:text-base">
+                    <i class="fa-solid fa-table-list text-slate-600 mr-1"></i> รายการบันทึกผล & Action Plan เฉพาะจุดที่หลุดควบคุม (แก้ไข / ลบข้อมูล)
+                </h3>
+                <span class="text-xs text-slate-500" id="recordCount">ทั้งหมด 8 รายการ</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-700 border-b border-slate-200 text-xs uppercase">
+                            <th class="py-2.5 px-3">ลำดับ</th>
+                            <th class="py-2.5 px-3">วันที่ผลิต</th>
+                            <th class="py-2.5 px-3">รอบการตรวจ (4 ครั้ง/วัน)</th>
+                            <th class="py-2.5 px-3">Lot / MC</th>
+                            <th class="py-2.5 px-3">ผู้บันทึก (Dept)</th>
+                            <th class="py-2.5 px-3 text-center">ค่าที่วัด (X1 - X5)</th>
+                            <th class="py-2.5 px-3 text-right">X-bar</th>
+                            <th class="py-2.5 px-3 text-right">R</th>
+                            <th class="py-2.5 px-3 text-center">สถานะ</th>
+                            <th class="py-2.5 px-3 text-center">Action Plan (เฉพาะ OUT/NG)</th>
+                            <th class="py-2.5 px-3 text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody" class="divide-y divide-slate-200">
+                        <!-- Rows rendered by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL 1: ADD / EDIT PART CODE & SPEC / TOLERANCE / UCL-LCL            -->
+    <!-- ===================================================================== -->
+    <div id="partModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-200">
+            <div class="bg-blue-900 text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-blue-300"></i>
+                    <h3 class="font-bold text-lg" id="partModalTitle">เพิ่ม Part Code ใหม่</h3>
+                </div>
+                <button onclick="closePartModal()" class="text-white hover:text-blue-200 text-2xl leading-none">&times;</button>
+            </div>
+
+            <form id="partForm" onsubmit="savePartConfig(event)" class="p-6 space-y-4 max-h-[85vh] overflow-y-auto">
+                <input type="hidden" id="partModalMode" value="add">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">รหัสสินค้า (Part Code) *</label>
+                        <input type="text" id="cfgPartCode" required placeholder="เช่น 040160-C62T-TZ" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">ชื่อชิ้นงาน (Part Name) *</label>
+                        <input type="text" id="cfgPartName" required placeholder="เช่น PH/W T/S.2 TORX (SPECIAL)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">จุดควบคุม SC (Special Characteristic Item) *</label>
+                        <input type="text" id="cfgScItem" required placeholder="เช่น SC-OD" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">หน่วยวัด (Unit) *</label>
+                        <input type="text" id="cfgUnit" required value="mm" placeholder="mm, µm, N·m" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">เครื่องมือวัดที่ใช้ (Inspection Instrument) *</label>
+                    <input type="text" id="cfgInstrument" required placeholder="เช่น Digital Micrometer (0-25mm)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                </div>
+
+                <!-- Spec & Tolerance (+ / -) Box -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-800 uppercase"><i class="fa-solid fa-ruler-combined text-blue-600 mr-1"></i> กำหนดค่า Spec และค่าเผื่อ (+ / -)</span>
+                        <button type="button" onclick="autoCalculateControlLimits()" class="text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-semibold px-2.5 py-1 rounded transition">
+                            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> คำนวณ UCL/LCL อัตโนมัติ
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">ค่าเป้าหมาย (Nominal Spec) *</label>
+                            <input type="number" step="0.0001" id="cfgNominal" required oninput="previewSpecLimits()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-emerald-700 mb-1">ค่าเผื่อบวก (+ Tolerance) *</label>
+                            <input type="number" step="0.0001" min="0" id="cfgPlusTol" required oninput="previewSpecLimits()" class="w-full border border-emerald-300 rounded-lg px-3 py-2 text-sm font-mono bg-emerald-50/40">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-rose-700 mb-1">ค่าเผื่อลบ (- Tolerance) *</label>
+                            <input type="number" step="0.0001" min="0" id="cfgMinusTol" required oninput="previewSpecLimits()" class="w-full border border-rose-300 rounded-lg px-3 py-2 text-sm font-mono bg-rose-50/40">
+                        </div>
+                    </div>
+
+                    <div class="text-xs bg-white p-2 rounded border border-slate-200 flex justify-between items-center">
+                        <span class="text-slate-600">ช่วงพิกัดความเผื่อ (Spec Range):</span>
+                        <span class="font-mono font-bold text-red-700" id="previewUslLsl">LSL = 0.000 | USL = 0.000</span>
+                    </div>
+                </div>
+
+                <!-- Control Limits (UCL / LCL / UCL_R) Box -->
+                <div class="bg-amber-50/70 p-4 rounded-xl border border-amber-200 space-y-3">
+                    <span class="block text-xs font-bold text-amber-900 uppercase"><i class="fa-solid fa-chart-line text-amber-600 mr-1"></i> กำหนดเส้นควบคุมกราฟ (Control Limits: UCL & LCL)</span>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-amber-900 mb-1">UCL (X-bar Max) *</label>
+                            <input type="number" step="0.0001" id="cfgUclX" required class="w-full border border-amber-300 rounded-lg px-3 py-2 text-sm font-mono bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-amber-900 mb-1">LCL (X-bar Min) *</label>
+                            <input type="number" step="0.0001" id="cfgLclX" required class="w-full border border-amber-300 rounded-lg px-3 py-2 text-sm font-mono bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-purple-900 mb-1">UCL_R (R-Chart Max) *</label>
+                            <input type="number" step="0.0001" min="0" id="cfgUclR" required class="w-full border border-purple-300 rounded-lg px-3 py-2 text-sm font-mono bg-white">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-3 border-t border-slate-200">
+                    <button type="button" id="btnDeletePart" onclick="deleteCurrentPart()" class="hidden px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-bold transition">
+                        <i class="fa-solid fa-trash mr-1"></i> ลบ Part Code นี้
+                    </button>
+                    <div class="flex gap-2 ml-auto">
+                        <button type="button" onclick="closePartModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-sm font-medium">ยกเลิก</button>
+                        <button type="submit" class="px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-sm font-bold shadow">
+                            <i class="fa-solid fa-save mr-1"></i> บันทึกการตั้งค่า Part
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL 2: COMPANY LOGO & DOCUMENT CONTROL SETTINGS                     -->
+    <!-- ===================================================================== -->
+    <div id="companySettingsModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
+            <div class="bg-slate-800 text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-building text-amber-400"></i>
+                    <h3 class="font-bold text-lg">ตั้งค่าโลโก้บริษัท และหัวเอกสาร IATF 16949</h3>
+                </div>
+                <button onclick="closeCompanySettingsModal()" class="text-slate-300 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+
+            <form onsubmit="saveCompanySettings(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">ชื่อบริษัท (Company Name) *</label>
+                    <input type="text" id="setCompanyName" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold">
+                </div>
+
+                <!-- Logo Upload -->
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <label class="block text-xs font-bold text-slate-700 mb-2">โลโก้บริษัทสำหรับพิมพ์รายงาน (Company Logo)</label>
+                    <div class="flex items-center gap-4">
+                        <div class="w-20 h-16 border border-slate-300 bg-white rounded flex items-center justify-center overflow-hidden p-1">
+                            <img id="previewLogoImg" src="" alt="Preview" class="hidden max-h-full max-w-full object-contain">
+                            <span id="previewLogoText" class="text-xs text-slate-400">ไม่มีรูป</span>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="cursor-pointer inline-block bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-medium shadow-sm">
+                                <i class="fa-solid fa-upload mr-1"></i> อัปโหลดรูปโลโก้ (PNG/JPG)
+                                <input type="file" accept="image/*" class="hidden" onchange="handleLogoUpload(event)">
+                            </label>
+                            <button type="button" onclick="removeCompanyLogo()" class="block text-xs text-red-600 hover:underline">
+                                ลบโลโก้ (ใช้ตัวอักษรย่อแทน)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Metadata -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">หมายเลขเอกสาร (Doc No.)</label>
+                        <input type="text" id="setDocNo" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">วันที่บังคับใช้ (Rev Date)</label>
+                        <input type="date" id="setRevDate" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">แก้ไขครั้งที่ (Rev)</label>
+                        <input type="text" id="setRevNo" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
+                    <button type="button" onclick="closeCompanySettingsModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-sm font-medium">ยกเลิก</button>
+                    <button type="submit" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-sm font-bold shadow">
+                        <i class="fa-solid fa-check mr-1"></i> บันทึกการตั้งค่า
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL 3: REACTION PLAN / CORRECTIVE ACTION                            -->
+    <!-- ===================================================================== -->
+    <div id="actionModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-200">
+            <div class="bg-red-600 text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-xl text-yellow-300"></i>
+                    <h3 class="font-bold text-lg">Reaction Plan & Corrective Action (IATF 16949)</h3>
+                </div>
+                <button onclick="closeActionModal()" class="text-white hover:text-red-200 text-2xl leading-none">&times;</button>
+            </div>
+            
+            <form id="actionForm" onsubmit="saveActionPlan(event)" class="p-6 space-y-4 max-h-[85vh] overflow-y-auto">
+                <input type="hidden" id="actionRecordId">
+                
+                <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-900 space-y-1" id="actionIssueSummary"></div>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-900">
+                    <div class="font-bold mb-1"><i class="fa-solid fa-book-open mr-1"></i> แนวทางปฏิบัติมาตรฐานเมื่อค่าหลุดกรอบ (Control Plan Reaction):</div>
+                    <ul class="list-disc list-inside space-y-0.5 text-amber-800">
+                        <li><strong>1. Containment (กักกันงาน):</strong> หยุดเครื่องจักรทันที กักกันงานตั้งแต่รอบตรวจปกติครั้งล่าสุด (100% Sorting)</li>
+                        <li><strong>2. Root Cause (วิเคราะห์ 4M):</strong> ตรวจสอบ Tooling สึกหรอ, Offset เครื่องจักรเคลื่อน, Material หรือ Jig จับยึด</li>
+                        <li><strong>3. Adjustment & Verification:</strong> ปรับตั้งค่าเครื่องจักร (Adjust Offset/Tool) และวัดยืนยันชิ้นงานใหม่ 5 ชิ้นติดกันก่อนเดินเครื่องต่อ</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">1. สาเหตุเบื้องต้น (4M Root Cause) *</label>
+                    <select id="actionRootCause" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+                        <option value="">-- เลือกสาเหตุที่พบ --</option>
+                        <option value="Machine: ค่า Offset เครื่องจักรเคลื่อน / อุณหภูมิเปลี่ยน">Machine: ค่า Offset เครื่องจักรเคลื่อน / อุณหภูมิเปลี่ยน</option>
+                        <option value="Tooling: ทูลส์ / มีดกลึง / ดอกต๊าป สึกหรอหรือบิ่น">Tooling: ทูลส์ / มีดกลึง / ดอกต๊าป สึกหรอหรือบิ่น</option>
+                        <option value="Method: การจับยึดชิ้นงาน (Jig/Fixture) หลวมหรือมีเศษติด">Method: การจับยึดชิ้นงาน (Jig/Fixture) หลวมหรือมีเศษติด</option>
+                        <option value="Material: วัตถุดิบไม่ได้ขนาด / ความแข็งเปลี่ยนแปลง">Material: วัตถุดิบไม่ได้ขนาด / ความแข็งเปลี่ยนแปลง</option>
+                        <option value="Man: พนักงานตั้งค่าหรือใช้เครื่องมือวัดคลาดเคลื่อน">Man: พนักงานตั้งค่าหรือใช้เครื่องมือวัดคลาดเคลื่อน</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">2. วิธีการแก้ไขเพื่อให้ค่ากลับเข้าสู่กรอบ (Corrective Action / Adjustment) *</label>
+                    <textarea id="actionDetail" rows="3" required placeholder="ระบุรายละเอียด เช่น ปรับ Offset แกน Z -0.05 mm, เปลี่ยน Insert ใหม่ และคัดแยกงาน Lot ก่อนหน้า 100%..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">3. ผลการคัดแยกงาน (Containment / 100% Sort) *</label>
+                        <input type="text" id="actionContainment" required placeholder="เช่น คัดแยก 200 pcs (OK: 195, NG: 5)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">4. ค่าที่วัดยืนยันหลังแก้ไข (Re-check X-bar) *</label>
+                        <input type="number" step="0.0001" id="actionRecheckVal" required placeholder="ระบุค่าเฉลี่ยหลังปรับแก้" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">ผู้ดำเนินการแก้ไข (PD / Engineer) *</label>
+                        <input type="text" id="actionBy" required placeholder="ชื่อผู้แก้ไข" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">ผู้ทวนสอบและอนุมัติเดินเครื่อง (QC Verify) *</label>
+                        <input type="text" id="actionVerifiedBy" required placeholder="ชื่อเจ้าหน้าที่ QC ผู้อนุมัติ" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-200">
+                    <button type="button" onclick="closeActionModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-sm font-medium">ปิดหน้าต่าง</button>
+                    <button type="submit" class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold shadow">
+                        <i class="fa-solid fa-check-circle mr-1"></i> บันทึก Action Plan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL 4: DRAWING REFERENCE VIEWER                                     -->
+    <!-- ===================================================================== -->
+    <div id="drawingModal" class="hidden fixed inset-0 bg-slate-900/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full h-[85vh] flex flex-col overflow-hidden">
+            <div class="bg-slate-800 text-white px-5 py-3 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-compass-drafting text-blue-400"></i>
+                    <h3 class="font-bold text-base" id="drawingModalTitle">Drawing Reference</h3>
+                </div>
+                <button onclick="closeDrawingModal()" class="text-slate-300 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+            <div class="flex-1 bg-slate-200 p-2 overflow-auto flex items-center justify-center" id="drawingViewerContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. DEFAULT MASTER DATA (MATCHES SCREENSHOT)
+        // ==========================================
+        const defaultPartConfigs = [
+            {
+                code: "040160-C62T-TZ",
+                name: "PH/W T/S.2 TORX (SPECIAL)",
+                scItem: "SC-OD",
+                instrument: "Digital Micrometer (0-25mm)",
+                nominal: 4.00,
+                plusTol: 0.18,
+                minusTol: 0,
+                uclX: 4.00,
+                lclX: 4.00,
+                uclR: 4.18,
+                unit: "mm"
+            },
+            {
+                code: "HN-97702-B200",
+                name: "HV A/C Valve Housing Screw",
+                scItem: "SC-02: Pitch Diameter M6",
+                instrument: "Thread Micrometer / Ring Gauge",
+                nominal: 5.35,
+                plusTol: 0.05,
+                minusTol: 0.05,
+                uclX: 5.385,
+                lclX: 5.315,
+                uclR: 0.04,
+                unit: "mm"
+            },
+            {
+                code: "HN-97703-C300",
+                name: "Thermal Expansion Pin",
+                scItem: "SC-03: Outer Diameter Ø",
+                instrument: "Laser Micrometer / Air Gauge",
+                nominal: 8.00,
+                plusTol: 0.03,
+                minusTol: 0.03,
+                uclX: 8.02,
+                lclX: 7.98,
+                uclR: 0.025,
+                unit: "mm"
+            },
+            {
+                code: "HN-97704-D400",
+                name: "Condenser Bracket Stud",
+                scItem: "SC-04: Flange Thickness",
+                instrument: "Digital Vernier Caliper",
+                nominal: 3.20,
+                plusTol: 0.10,
+                minusTol: 0.10,
+                uclX: 3.27,
+                lclX: 3.13,
+                uclR: 0.08,
+                unit: "mm"
+            },
+            {
+                code: "HN-97705-E500",
+                name: "E-Compressor Shaft Nut",
+                scItem: "SC-05: Perpendicularity / Height",
+                instrument: "Profile Projector QM-Data 200",
+                nominal: 10.50,
+                plusTol: 0.08,
+                minusTol: 0.08,
+                uclX: 10.55,
+                lclX: 10.45,
+                uclR: 0.06,
+                unit: "mm"
+            }
+        ];
+
+        const defaultCompanySettings = {
+            companyName: "THAI HANSUNG BOLT CO., LTD.",
+            logoDataUrl: "",
+            docNo: "THB-GD-15-01",
+            revDate: "2026-11-20",
+            revNo: "00"
+        };
+
+        const defaultRecords = [
+            { id: "REC-01", partCode: "040160-C62T-TZ", date: "2026-11-19", slot: "ครั้งที่ 1 (08:30 - กะเช้าเริ่มงาน)", dept: "PD (Production)", inspector: "สมชาย (PD)", lotNo: "MC01-261119A", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
+            { id: "REC-02", partCode: "040160-C62T-TZ", date: "2026-11-19", slot: "ครั้งที่ 2 (13:30 - กะเช้าช่วงบ่าย)", dept: "QC (Quality Control)", inspector: "พรทิพย์ (QC)", lotNo: "MC01-261119A", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
+            { id: "REC-03", partCode: "040160-C62T-TZ", date: "2026-11-19", slot: "ครั้งที่ 3 (20:30 - กะดึกเริ่มงาน)", dept: "PD (Production)", inspector: "วิชัย (PD)", lotNo: "MC01-261119B", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
+            { id: "REC-04", partCode: "040160-C62T-TZ", date: "2026-11-19", slot: "ครั้งที่ 4 (01:30 - กะดึกช่วงหลัง)", dept: "QC (Quality Control)", inspector: "ชนัญชิดา (QC)", lotNo: "MC01-261119B", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
+            { id: "REC-05", partCode: "040160-C62T-TZ", date: "2026-11-20", slot: "ครั้งที่ 1 (08:30 - กะเช้าเริ่มงาน)", dept: "PD (Production)", inspector: "สมชาย (PD)", lotNo: "MC01-261120A", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
+            { id: "REC-06", partCode: "040160-C62T-TZ", date: "2026-11-20", slot: "ครั้งที่ 2 (13:30 - กะเช้าช่วงบ่าย)", dept: "QC (Quality Control)", inspector: "พรทิพย์ (QC)", lotNo: "MC01-261120A", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
+            { id: "REC-07", partCode: "040160-C62T-TZ", date: "2026-11-20", slot: "ครั้งที่ 3 (20:30 - กะดึกเริ่มงาน)", dept: "PD (Production)", inspector: "วิชัย (PD)", lotNo: "MC01-261120B", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null },
+            { id: "REC-08", partCode: "040160-C62T-TZ", date: "2026-11-20", slot: "ครั้งที่ 4 (01:30 - กะดึกช่วงหลัง)", dept: "QC (Quality Control)", inspector: "ชนัญชิดา (QC)", lotNo: "MC01-261120B", samples: [4.00, 4.00, 4.00, 4.00, 4.00], action: null }
+        ];
+
+        // ==========================================
+        // 2. LOAD STATE FROM LOCAL STORAGE
+        // ==========================================
+        let partConfigs = JSON.parse(localStorage.getItem('hanon_spc_parts_v4')) || defaultPartConfigs;
+        let companySettings = JSON.parse(localStorage.getItem('hanon_spc_company_v4')) || defaultCompanySettings;
+        let spcRecords = JSON.parse(localStorage.getItem('hanon_spc_records_v4')) || defaultRecords;
+        let partDrawings = JSON.parse(localStorage.getItem('hanon_spc_drawings_v4')) || {};
+
+        let currentPartIndex = 0;
+        let xbarChartInstance = null;
+        let rChartInstance = null;
+        let histogramChartInstance = null;
+        let tempLogoBase64 = "";
+
+        function getPartLimits(part) {
+            const usl = Number((Number(part.nominal) + Number(part.plusTol)).toFixed(4));
+            const lsl = Number((Number(part.nominal) - Number(part.minusTol)).toFixed(4));
+            return { usl, lsl };
+        }
+
+        // ==========================================
+        // 3. INITIALIZATION & PRINT RESIZE HOOK
+        // ==========================================
+        window.onload = () => {
+            document.getElementById('prodDate').valueAsDate = new Date();
+            applyCompanySettingsUI();
+            renderTabs();
+            selectPart(0);
+        };
+
+        function resizeAllCharts() {
+            if (xbarChartInstance) xbarChartInstance.resize();
+            if (rChartInstance) rChartInstance.resize();
+            if (histogramChartInstance) histogramChartInstance.resize();
+        }
+
+        window.addEventListener('beforeprint', resizeAllCharts);
+        window.addEventListener('afterprint', resizeAllCharts);
+
+        function saveAllToStorage() {
+            localStorage.setItem('hanon_spc_parts_v4', JSON.stringify(partConfigs));
+            localStorage.setItem('hanon_spc_company_v4', JSON.stringify(companySettings));
+            localStorage.setItem('hanon_spc_records_v4', JSON.stringify(spcRecords));
+        }
+
+        // ==========================================
+        // 4. COMPANY LOGO & DOCUMENT HEADER LOGIC
+        // ==========================================
+        function applyCompanySettingsUI() {
+            document.getElementById('docCompanyName').textContent = companySettings.companyName;
+            document.getElementById('specCompanyCell').textContent = companySettings.companyName;
+            document.getElementById('metaDocNo').textContent = companySettings.docNo;
+            document.getElementById('metaRevDate').textContent = companySettings.revDate;
+            document.getElementById('metaRevNo').textContent = companySettings.revNo;
+
+            const logoImg = document.getElementById('docLogoImg');
+            const logoPlaceholder = document.getElementById('docLogoPlaceholder');
+            if (companySettings.logoDataUrl) {
+                logoImg.src = companySettings.logoDataUrl;
+                logoImg.classList.remove('hidden');
+                logoPlaceholder.classList.add('hidden');
+            } else {
+                logoImg.classList.add('hidden');
+                logoPlaceholder.classList.remove('hidden');
+            }
+        }
+
+        function openCompanySettingsModal() {
+            document.getElementById('setCompanyName').value = companySettings.companyName;
+            document.getElementById('setDocNo').value = companySettings.docNo;
+            document.getElementById('setRevDate').value = companySettings.revDate;
+            document.getElementById('setRevNo').value = companySettings.revNo;
+            tempLogoBase64 = companySettings.logoDataUrl || "";
+
+            updateLogoPreviewUI(tempLogoBase64);
+            document.getElementById('companySettingsModal').classList.remove('hidden');
+        }
+
+        function closeCompanySettingsModal() {
+            document.getElementById('companySettingsModal').classList.add('hidden');
+        }
+
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempLogoBase64 = e.target.result;
+                updateLogoPreviewUI(tempLogoBase64);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeCompanyLogo() {
+            tempLogoBase64 = "";
+            updateLogoPreviewUI("");
+        }
+
+        function updateLogoPreviewUI(dataUrl) {
+            const img = document.getElementById('previewLogoImg');
+            const txt = document.getElementById('previewLogoText');
+            if (dataUrl) {
+                img.src = dataUrl;
+                img.classList.remove('hidden');
+                txt.classList.add('hidden');
+            } else {
+                img.classList.add('hidden');
+                txt.classList.remove('hidden');
+            }
+        }
+
+        function saveCompanySettings(e) {
+            e.preventDefault();
+            companySettings = {
+                companyName: document.getElementById('setCompanyName').value.trim(),
+                logoDataUrl: tempLogoBase64,
+                docNo: document.getElementById('setDocNo').value.trim(),
+                revDate: document.getElementById('setRevDate').value,
+                revNo: document.getElementById('setRevNo').value.trim()
+            };
+            saveAllToStorage();
+            applyCompanySettingsUI();
+            closeCompanySettingsModal();
+        }
+
+        // ==========================================
+        // 5. PART CODE MANAGEMENT (ADD / EDIT / DELETE)
+        // ==========================================
+        function openPartModal(mode) {
+            document.getElementById('partModalMode').value = mode;
+            const deleteBtn = document.getElementById('btnDeletePart');
+
+            if (mode === 'add') {
+                document.getElementById('partModalTitle').textContent = 'เพิ่ม Part Code ใหม่ (Hanon Systems)';
+                document.getElementById('partForm').reset();
+                document.getElementById('cfgUnit').value = 'mm';
+                document.getElementById('previewUslLsl').textContent = 'LSL = 0.000 | USL = 0.000';
+                deleteBtn.classList.add('hidden');
+            } else {
+                const part = partConfigs[currentPartIndex];
+                document.getElementById('partModalTitle').textContent = `แก้ไข Spec & Control Limits: ${part.code}`;
+                document.getElementById('cfgPartCode').value = part.code;
+                document.getElementById('cfgPartName').value = part.name;
+                document.getElementById('cfgScItem').value = part.scItem;
+                document.getElementById('cfgUnit').value = part.unit;
+                document.getElementById('cfgInstrument').value = part.instrument;
+                document.getElementById('cfgNominal').value = part.nominal;
+                document.getElementById('cfgPlusTol').value = part.plusTol;
+                document.getElementById('cfgMinusTol').value = part.minusTol;
+                document.getElementById('cfgUclX').value = part.uclX;
+                document.getElementById('cfgLclX').value = part.lclX;
+                document.getElementById('cfgUclR').value = part.uclR;
+                previewSpecLimits();
+
+                if (partConfigs.length > 1) {
+                    deleteBtn.classList.remove('hidden');
+                } else {
+                    deleteBtn.classList.add('hidden');
+                }
+            }
+
+            document.getElementById('partModal').classList.remove('hidden');
+        }
+
+        function closePartModal() {
+            document.getElementById('partModal').classList.add('hidden');
+        }
+
+        function previewSpecLimits() {
+            const nom = parseFloat(document.getElementById('cfgNominal').value) || 0;
+            const plus = parseFloat(document.getElementById('cfgPlusTol').value) || 0;
+            const minus = parseFloat(document.getElementById('cfgMinusTol').value) || 0;
+            const usl = (nom + plus).toFixed(4);
+            const lsl = (nom - minus).toFixed(4);
+            document.getElementById('previewUslLsl').textContent = `LSL = ${lsl} | USL = ${usl}`;
+        }
+
+        function autoCalculateControlLimits() {
+            const nom = parseFloat(document.getElementById('cfgNominal').value);
+            const plus = parseFloat(document.getElementById('cfgPlusTol').value);
+            const minus = parseFloat(document.getElementById('cfgMinusTol').value);
+
+            if (isNaN(nom) || isNaN(plus) || isNaN(minus)) {
+                alert('กรุณากรอกค่า Nominal, + Tolerance และ - Tolerance ก่อนคำนวณ');
+                return;
+            }
+            const uclX = Number((nom + plus * 0.75).toFixed(4));
+            const lclX = Number((nom - minus * 0.75).toFixed(4));
+            const uclR = Number(((plus + minus) * 0.4).toFixed(4));
+
+            document.getElementById('cfgUclX').value = uclX;
+            document.getElementById('cfgLclX').value = lclX;
+            document.getElementById('cfgUclR').value = uclR;
+        }
+
+        function savePartConfig(e) {
+            e.preventDefault();
+            const mode = document.getElementById('partModalMode').value;
+            const newPartData = {
+                code: document.getElementById('cfgPartCode').value.trim(),
+                name: document.getElementById('cfgPartName').value.trim(),
+                scItem: document.getElementById('cfgScItem').value.trim(),
+                unit: document.getElementById('cfgUnit').value.trim(),
+                instrument: document.getElementById('cfgInstrument').value.trim(),
+                nominal: parseFloat(document.getElementById('cfgNominal').value),
+                plusTol: parseFloat(document.getElementById('cfgPlusTol').value),
+                minusTol: parseFloat(document.getElementById('cfgMinusTol').value),
+                uclX: parseFloat(document.getElementById('cfgUclX').value),
+                lclX: parseFloat(document.getElementById('cfgLclX').value),
+                uclR: parseFloat(document.getElementById('cfgUclR').value)
+            };
+
+            if (mode === 'add') {
+                if (partConfigs.some(p => p.code === newPartData.code)) {
+                    alert('Part Code นี้มีอยู่ในระบบแล้ว กรุณาใช้รหัสอื่น');
+                    return;
+                }
+                partConfigs.push(newPartData);
+                currentPartIndex = partConfigs.length - 1;
+            } else {
+                const oldCode = partConfigs[currentPartIndex].code;
+                partConfigs[currentPartIndex] = newPartData;
+                if (oldCode !== newPartData.code) {
+                    spcRecords.forEach(r => { if (r.partCode === oldCode) r.partCode = newPartData.code; });
+                    if (partDrawings[oldCode]) {
+                        partDrawings[newPartData.code] = partDrawings[oldCode];
+                        delete partDrawings[oldCode];
+                        localStorage.setItem('hanon_spc_drawings_v4', JSON.stringify(partDrawings));
+                    }
+                }
+            }
+
+            saveAllToStorage();
+            closePartModal();
+            renderTabs();
+            selectPart(currentPartIndex);
+        }
+
+        function deleteCurrentPart() {
+            if (partConfigs.length <= 1) {
+                alert('ต้องมี Part Code อย่างน้อย 1 รายการในระบบ');
+                return;
+            }
+            const part = partConfigs[currentPartIndex];
+            if (confirm(`ยืนยันการลบ Part Code "${part.code}" และประวัติการตรวจวัดทั้งหมดของรหัสนี้ใช่หรือไม่?`)) {
+                spcRecords = spcRecords.filter(r => r.partCode !== part.code);
+                partConfigs.splice(currentPartIndex, 1);
+                currentPartIndex = 0;
+                saveAllToStorage();
+                closePartModal();
+                renderTabs();
+                selectPart(0);
+            }
+        }
+
+        // ==========================================
+        // 6. TABS & SPECIFICATION TABLE RENDERING
+        // ==========================================
+        function renderTabs() {
+            document.getElementById('totalPartsCount').textContent = partConfigs.length;
+            const container = document.getElementById('partTabs');
+            container.innerHTML = partConfigs.map((p, idx) => {
+                const hasUnresolvedAlert = spcRecords.some(r => {
+                    if (r.partCode !== p.code) return false;
+                    const stats = calculateStats(r.samples, p);
+                    return stats.isOut && !r.action;
+                });
+
+                const activeClass = idx === currentPartIndex ? 'tab-active shadow-md' : 'tab-inactive border border-slate-200';
+                return `
+                    <button onclick="selectPart(${idx})" class="p-2.5 rounded-lg text-left transition flex flex-col justify-between relative ${activeClass}">
+                        <div class="flex justify-between items-center w-full">
+                            <span class="text-[11px] font-bold uppercase tracking-wider opacity-80">Code #${idx + 1}</span>
+                            ${hasUnresolvedAlert ? '<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold animate-pulse">! NG</span>' : ''}
+                        </div>
+                        <div class="font-bold text-sm mt-0.5 truncate">${p.code}</div>
+                        <div class="text-xs opacity-75 truncate">${p.name}</div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function selectPart(index) {
+            currentPartIndex = index;
+            const part = partConfigs[index];
+            const { usl, lsl } = getPartLimits(part);
+            resetForm();
+            renderTabs();
+
+            document.getElementById('headerScItem').textContent = part.scItem;
+            document.getElementById('specPartNameCell').textContent = part.name;
+            document.getElementById('specPartCodeCell').textContent = part.code;
+            document.getElementById('specMainCell').textContent = `${part.nominal} (+${part.plusTol} / -${part.minusTol})`;
+            document.getElementById('specInstrumentCell').textContent = part.instrument;
+            document.getElementById('specUnitCell').textContent = part.unit;
+            document.getElementById('specNominalCell').textContent = Number(part.nominal).toFixed(3);
+            document.getElementById('specUslCell').textContent = usl.toFixed(3);
+            document.getElementById('specLslCell').textContent = lsl.toFixed(3);
+
+            const isOneSided = Number(part.plusTol) === 0 || Number(part.minusTol) === 0;
+            document.getElementById('specTolTypeCell').textContent = isOneSided ? 'พิกัดด้านเดียว (Unilateral)' : 'พิกัดสองด้าน (Bilateral)';
+
+            document.getElementById('inputHint').textContent = `Spec Min-Max: ${lsl} - ${usl} ${part.unit} | Control Limit (UCL/LCL): ${part.lclX} - ${part.uclX}`;
+
+            updateDrawingUI();
+            renderAllSections();
+        }
+
+        // ==========================================
+        // 7. STATISTICAL CALCULATIONS
+        // ==========================================
+        function calculateStats(samples, part) {
+            const { usl, lsl } = getPartLimits(part);
+            const sum = samples.reduce((a, b) => a + b, 0);
+            const xbar = sum / samples.length;
+            const max = Math.max(...samples);
+            const min = Math.min(...samples);
+            const r = max - min;
+
+            const isXbarOut = xbar > part.uclX || xbar < part.lclX || xbar > usl || xbar < lsl;
+            const isROut = r > part.uclR;
+            const isAnySampleOutSpec = samples.some(v => v > usl || v < lsl);
+            const isOut = isXbarOut || isROut || isAnySampleOutSpec;
+
+            let reason = [];
+            if (xbar > usl || xbar < lsl) reason.push("X-bar หลุด Spec (USL/LSL)");
+            else if (xbar > part.uclX || xbar < part.lclX) reason.push("X-bar หลุด Control Limit (UCL/LCL)");
+            if (isROut) reason.push("ค่า R เกิน UCL_R");
+            if (isAnySampleOutSpec) reason.push("มีชิ้นงานหลุด Spec Min/Max");
+
+            return {
+                xbar: Number(xbar.toFixed(4)),
+                r: Number(r.toFixed(4)),
+                isOut,
+                reason: reason.join(", ")
+            };
+        }
+
+        function normalCDF(z) {
+            const t = 1 / (1 + 0.2316419 * Math.abs(z));
+            const d = 0.3989423 * Math.exp(-z * z / 2);
+            const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+            return z > 0 ? 1 - p : p;
+        }
+
+        function computeFullCapability(records, part) {
+            const { usl, lsl } = getPartLimits(part);
+            const allSamples = records.flatMap(r => r.samples.map(Number));
+
+            if (allSamples.length === 0) {
+                return { hasData: false, xDoubleBar: part.nominal, rBar: 0, sigma: 0, max: 0, min: 0, cp: 0, cpu: 0, cpl: 0, cpk: 0, defectPct: 0 };
+            }
+
+            const statsList = records.map(r => calculateStats(r.samples, part));
+            const xDoubleBar = statsList.reduce((a, b) => a + b.xbar, 0) / statsList.length;
+            const rBar = statsList.reduce((a, b) => a + b.r, 0) / statsList.length;
+            const maxVal = Math.max(...allSamples);
+            const minVal = Math.min(...allSamples);
+
+            let sigma = rBar / 2.326;
+            if (sigma === 0 && allSamples.length > 1) {
+                const mean = allSamples.reduce((a, b) => a + b, 0) / allSamples.length;
+                const variance = allSamples.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (allSamples.length - 1);
+                sigma = Math.sqrt(variance);
+            }
+
+            if (sigma === 0) {
+                return { hasData: true, xDoubleBar, rBar, sigma: 0, max: maxVal, min: minVal, cp: Infinity, cpu: Infinity, cpl: Infinity, cpk: Infinity, defectPct: 0 };
+            }
+
+            const cp = (usl - lsl) / (6 * sigma);
+            const cpu = (usl - xDoubleBar) / (3 * sigma);
+            const cpl = (xDoubleBar - lsl) / (3 * sigma);
+            const cpk = Math.min(cpu, cpl);
+
+            const zUpper = (usl - xDoubleBar) / sigma;
+            const zLower = (xDoubleBar - lsl) / sigma;
+            const defectProb = (1 - normalCDF(zUpper)) + (1 - normalCDF(zLower));
+            const defectPct = Math.max(0, defectProb * 100);
+
+            return { hasData: true, xDoubleBar, rBar, sigma, max: maxVal, min: minVal, cp, cpu, cpl, cpk, defectPct };
+        }
+
+        // ==========================================
+        // 8. RENDER ALL SECTIONS
+        // ==========================================
+        function renderAllSections() {
+            const part = partConfigs[currentPartIndex];
+            const filtered = spcRecords
+                .filter(r => r.partCode === part.code)
+                .sort((a, b) => a.date.localeCompare(b.date) || a.slot.localeCompare(b.slot));
+
+            document.getElementById('recordCount').textContent = `ทั้งหมด ${filtered.length} รายการ`;
+
+            const cap = computeFullCapability(filtered, part);
+            document.getElementById('statUclX').textContent = Number(part.uclX).toFixed(3);
+            document.getElementById('statClX').textContent = cap.hasData ? cap.xDoubleBar.toFixed(3) : Number(part.nominal).toFixed(3);
+            document.getElementById('statLclX').textContent = Number(part.lclX).toFixed(3);
+            document.getElementById('statUclR').textContent = Number(part.uclR).toFixed(3);
+            document.getElementById('statClR').textContent = cap.hasData ? cap.rBar.toFixed(3) : '-';
+
+            if (!cap.hasData) {
+                ['statDefectPct', 'statCpk', 'statCpl', 'statCpu', 'statCp', 'statMax', 'statMin', 'statXDoubleBar', 'statSigma']
+                    .forEach(id => document.getElementById(id).textContent = '-');
+            } else {
+                document.getElementById('statDefectPct').textContent = `${cap.defectPct.toFixed(4)}%`;
+                document.getElementById('statCpk').textContent = isFinite(cap.cpk) ? cap.cpk.toFixed(2) : '∞';
+                document.getElementById('statCpk').className = `text-right font-mono font-bold ${(!isFinite(cap.cpk) || cap.cpk >= 1.33) ? 'text-blue-900' : 'text-red-700'}`;
+                document.getElementById('statCpl').textContent = isFinite(cap.cpl) ? cap.cpl.toFixed(2) : '∞';
+                document.getElementById('statCpu').textContent = isFinite(cap.cpu) ? cap.cpu.toFixed(2) : '∞';
+                document.getElementById('statCp').textContent = isFinite(cap.cp) ? cap.cp.toFixed(2) : '∞';
+                document.getElementById('statMax').textContent = cap.max.toFixed(3);
+                document.getElementById('statMin').textContent = cap.min.toFixed(3);
+                document.getElementById('statXDoubleBar').textContent = cap.xDoubleBar.toFixed(3);
+                document.getElementById('statSigma').textContent = cap.sigma.toFixed(4);
+            }
+
+            renderSubgroupMatrix(filtered, part);
+
+            const outRecords = filtered.filter(r => calculateStats(r.samples, part).isOut);
+            const unresolvedRecords = outRecords.filter(r => !r.action);
+            const banner = document.getElementById('outOfControlBanner');
+
+            if (unresolvedRecords.length > 0) {
+                banner.classList.remove('hidden');
+                banner.dataset.latestId = unresolvedRecords[unresolvedRecords.length - 1].id;
+            } else {
+                banner.classList.add('hidden');
+            }
+
+            const printSummaryEl = document.getElementById('printActionSummaryText');
+            if (outRecords.length === 0) {
+                printSummaryEl.textContent = "กระบวนการผลิตอยู่ในเกณฑ์ควบคุมปกติทุกจุด (All Subgroups In-Control)";
+            } else {
+                const notes = outRecords.map(r => {
+                    if (r.action) {
+                        return `[${r.date} ${r.slot.slice(0, 10)}] ${r.action.rootCause.split(':')[0]} -> ${r.action.detail} (Re-check: ${r.action.recheckVal})`;
+                    }
+                    return `[${r.date} ${r.slot.slice(0, 10)}] พบค่าหลุดเกณฑ์ (รอ Action Plan)`;
+                });
+                printSummaryEl.textContent = notes.join(" | ");
+            }
+
+            renderManagementTable(filtered, part);
+
+            const recent25 = filtered.slice(-25);
+            updateHistogramChart(filtered, part);
+            updateSpcCharts(recent25, part);
+        }
+
+        function renderSubgroupMatrix(records, part) {
+            const totalCols = 25;
+            const recent = records.slice(-totalCols);
+
+            let html = `<thead><tr class="form-grid-header"><th class="w-16" colspan="2">Data Group</th>`;
+            for (let i = 1; i <= totalCols; i++) {
+                html += `<th class="min-w-[32px]">${i}</th>`;
+            }
+            html += `</tr><tr class="form-grid-sub"><th colspan="2">วันที่ / รอบ</th>`;
+            for (let i = 0; i < totalCols; i++) {
+                const rec = recent[i];
+                if (rec) {
+                    const slotNum = rec.slot.match(/ครั้งที่ (\d)/)?.[1] || '';
+                    html += `<td class="text-[9px] leading-tight">${rec.date.slice(5)}<br><span class="text-slate-500">#${slotNum}</span></td>`;
+                } else {
+                    html += `<td class="text-slate-300">-</td>`;
+                }
+            }
+            html += `</tr></thead><tbody>`;
+
+            const { usl, lsl } = getPartLimits(part);
+            for (let sIdx = 0; sIdx < 5; sIdx++) {
+                html += `<tr>`;
+                if (sIdx === 0) {
+                    html += `<td class="form-grid-header" rowspan="5">Data<br>(n=5)</td>`;
+                }
+                html += `<td class="form-grid-sub">X${sIdx + 1}</td>`;
+                for (let c = 0; c < totalCols; c++) {
+                    const rec = recent[c];
+                    if (rec) {
+                        const val = Number(rec.samples[sIdx]);
+                        const isSampleNg = val > usl || val < lsl;
+                        html += `<td class="${isSampleNg ? 'bg-red-100 text-red-700 font-bold' : ''}">${val.toFixed(2)}</td>`;
+                    } else {
+                        html += `<td></td>`;
+                    }
+                }
+                html += `</tr>`;
+            }
+
+            html += `<tr class="bg-blue-50/60"><td class="form-grid-header" colspan="2">X̄ (เฉลี่ย)</td>`;
+            for (let c = 0; c < totalCols; c++) {
+                const rec = recent[c];
+                if (rec) {
+                    const stats = calculateStats(rec.samples, part);
+                    html += `<td class="font-bold ${stats.isOut ? 'bg-red-200 text-red-800' : 'text-blue-900'}">${stats.xbar.toFixed(2)}</td>`;
+                } else {
+                    html += `<td></td>`;
+                }
+            }
+            html += `</tr><tr class="bg-purple-50/60"><td class="form-grid-header" colspan="2">R (พิสัย)</td>`;
+            for (let c = 0; c < totalCols; c++) {
+                const rec = recent[c];
+                if (rec) {
+                    const stats = calculateStats(rec.samples, part);
+                    html += `<td class="font-semibold ${stats.r > part.uclR ? 'bg-red-200 text-red-800' : 'text-purple-900'}">${stats.r.toFixed(2)}</td>`;
+                } else {
+                    html += `<td></td>`;
+                }
+            }
+            html += `</tr><tr><td class="form-grid-header" colspan="2">ผู้ตรวจ (Dept)</td>`;
+            for (let c = 0; c < totalCols; c++) {
+                const rec = recent[c];
+                if (rec) {
+                    const deptShort = rec.dept.startsWith('PD') ? 'PD' : 'QC';
+                    html += `<td class="text-[9px] font-semibold ${deptShort === 'QC' ? 'text-indigo-700' : 'text-slate-700'}">${deptShort}</td>`;
+                } else {
+                    html += `<td></td>`;
+                }
+            }
+            html += `</tr></tbody>`;
+
+            document.getElementById('matrixTable').innerHTML = html;
+        }
+
+        function renderManagementTable(filtered, part) {
+            const tbody = document.getElementById('dataTableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="11" class="text-center py-6 text-slate-400">ยังไม่มีข้อมูลการตรวจวัดสำหรับ ${part.code}</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map((rec, index) => {
+                const stats = calculateStats(rec.samples, part);
+                const rowBg = stats.isOut ? (rec.action ? 'bg-amber-50/60' : 'bg-red-50') : 'hover:bg-slate-50';
+                
+                // Show Action Plan button ONLY when out of control/spec
+                let actionCell = `<span class="text-xs text-slate-400">-</span>`;
+                if (stats.isOut) {
+                    if (rec.action) {
+                        actionCell = `
+                            <button onclick="openActionModal('${rec.id}')" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded text-xs font-semibold transition">
+                                <i class="fa-solid fa-check-circle mr-1"></i> แก้ไขแล้ว: ${rec.action.rootCause.split(':')[0]}
+                            </button>
+                        `;
+                    } else {
+                        actionCell = `
+                            <button onclick="openActionModal('${rec.id}')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded text-xs font-bold shadow animate-pulse transition">
+                                <i class="fa-solid fa-wrench mr-1"></i> กดระบุ Action แก้ไข!
+                            </button>
+                        `;
+                    }
+                }
+
+                return `
+                    <tr class="${rowBg} transition">
+                        <td class="py-2 px-3 font-mono font-bold text-slate-500">#${index + 1}</td>
+                        <td class="py-2 px-3 font-medium whitespace-nowrap">${rec.date}</td>
+                        <td class="py-2 px-3 text-xs">${rec.slot}</td>
+                        <td class="py-2 px-3 text-xs font-mono">${rec.lotNo}</td>
+                        <td class="py-2 px-3 text-xs">
+                            <span class="font-semibold">${rec.inspector}</span> <span class="text-slate-500">(${rec.dept.split(' ')[0]})</span>
+                        </td>
+                        <td class="py-2 px-3 text-center font-mono text-xs">
+                            [${rec.samples.map(s => Number(s).toFixed(3)).join(', ')}]
+                        </td>
+                        <td class="py-2 px-3 text-right font-mono font-bold ${stats.isOut ? 'text-red-600' : 'text-blue-700'}">
+                            ${stats.xbar.toFixed(3)}
+                        </td>
+                        <td class="py-2 px-3 text-right font-mono font-semibold ${stats.r > part.uclR ? 'text-red-600' : 'text-purple-700'}">
+                            ${stats.r.toFixed(3)}
+                        </td>
+                        <td class="py-2 px-3 text-center">
+                            ${stats.isOut 
+                                ? `<span class="status-ng px-2 py-0.5 rounded-full text-[11px] font-bold inline-block" title="${stats.reason}">OUT / NG</span>` 
+                                : `<span class="status-ok px-2 py-0.5 rounded-full text-[11px] font-bold inline-block">OK</span>`
+                            }
+                        </td>
+                        <td class="py-2 px-3 text-center">${actionCell}</td>
+                        <td class="py-2 px-3 text-center whitespace-nowrap">
+                            <button onclick="editRecord('${rec.id}')" class="text-blue-600 hover:text-blue-800 p-1" title="แก้ไขข้อมูล">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteRecord('${rec.id}')" class="text-red-500 hover:text-red-700 p-1 ml-1" title="ลบข้อมูล">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ==========================================
+        // 9. HISTOGRAM & X-BAR / R CHARTS RENDERING
+        // ==========================================
+        function updateHistogramChart(records, part) {
+            const { usl, lsl } = getPartLimits(part);
+            const allValues = records.flatMap(r => r.samples.map(Number));
+
+            if (histogramChartInstance) histogramChartInstance.destroy();
+
+            const numBins = 11;
+            const span = (usl - lsl) || 0.2;
+            const minRange = Math.min(lsl - span * 0.08, ...(allValues.length ? allValues : [lsl]));
+            const maxRange = Math.max(usl + span * 0.08, ...(allValues.length ? allValues : [usl]));
+            const binWidth = (maxRange - minRange) / numBins;
+
+            const binLabels = [];
+            const binCounts = new Array(numBins).fill(0);
+            const binColors = [];
+
+            for (let i = 0; i < numBins; i++) {
+                const start = minRange + i * binWidth;
+                const end = start + binWidth;
+                const mid = (start + end) / 2;
+                binLabels.push(mid.toFixed(3));
+                const isOutBin = mid < lsl || mid > usl;
+                binColors.push(isOutBin ? 'rgba(220, 38, 38, 0.8)' : 'rgba(29, 78, 216, 0.88)');
+            }
+
+            allValues.forEach(val => {
+                let idx = Math.floor((val - minRange) / binWidth);
+                if (idx < 0) idx = 0;
+                if (idx >= numBins) idx = numBins - 1;
+                binCounts[idx]++;
+            });
+
+            const findBinIndex = (target) => {
+                let bestIdx = 0;
+                let minDiff = Infinity;
+                binLabels.forEach((lbl, idx) => {
+                    const diff = Math.abs(parseFloat(lbl) - target);
+                    if (diff < minDiff) { minDiff = diff; bestIdx = idx; }
+                });
+                return bestIdx;
+            };
+
+            const ctxH = document.getElementById('histogramChart').getContext('2d');
+            histogramChartInstance = new Chart(ctxH, {
+                type: 'bar',
+                data: {
+                    labels: binLabels,
+                    datasets: [{
+                        label: 'ความถี่ (Frequency)',
+                        data: binCounts,
+                        backgroundColor: binColors,
+                        borderColor: '#0f172a',
+                        borderWidth: 1,
+                        barPercentage: 0.95,
+                        categoryPercentage: 0.95
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        x: {
+                            ticks: { font: { size: 8.5 }, maxRotation: 45, minRotation: 45 },
+                            title: { display: true, text: `ค่าการวัด (${part.unit})`, font: { size: 8.5 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 3, font: { size: 8.5 } },
+                            title: { display: true, text: 'จำนวนชิ้น (Freq)', font: { size: 8.5 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        annotation: {
+                            annotations: {
+                                lslLine: {
+                                    type: 'line',
+                                    xMin: findBinIndex(lsl),
+                                    xMax: findBinIndex(lsl),
+                                    borderColor: '#dc2626',
+                                    borderWidth: 1.8,
+                                    borderDash: [4, 3],
+                                    label: { display: true, content: `LSL (${lsl})`, position: 'start', backgroundColor: '#dc2626', font: { size: 8 }, padding: 2 }
+                                },
+                                uslLine: {
+                                    type: 'line',
+                                    xMin: findBinIndex(usl),
+                                    xMax: findBinIndex(usl),
+                                    borderColor: '#dc2626',
+                                    borderWidth: 1.8,
+                                    borderDash: [4, 3],
+                                    label: { display: true, content: `USL (${usl})`, position: 'start', backgroundColor: '#dc2626', font: { size: 8 }, padding: 2 }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateSpcCharts(records, part) {
+            const { usl, lsl } = getPartLimits(part);
+            const labels = records.map((_, idx) => `${idx + 1}`);
+            const xbarData = records.map(r => calculateStats(r.samples, part).xbar);
+            const rData = records.map(r => calculateStats(r.samples, part).r);
+
+            const xbarPointColors = records.map(r => calculateStats(r.samples, part).isOut ? '#dc2626' : '#1d4ed8');
+            const rPointColors = records.map(r => calculateStats(r.samples, part).r > part.uclR ? '#dc2626' : '#6d28d9');
+
+            if (xbarChartInstance) xbarChartInstance.destroy();
+            if (rChartInstance) rChartInstance.destroy();
+
+            const span = usl - lsl || 0.2;
+
+            const ctxX = document.getElementById('xbarChart').getContext('2d');
+            xbarChartInstance = new Chart(ctxX, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'X-bar',
+                        data: xbarData,
+                        borderColor: '#1d4ed8',
+                        borderWidth: 1.6,
+                        pointBackgroundColor: xbarPointColors,
+                        pointBorderColor: xbarPointColors,
+                        pointRadius: 3.5,
+                        tension: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        y: {
+                            suggestedMin: lsl - span * 0.25,
+                            suggestedMax: usl + span * 0.25,
+                            ticks: { font: { size: 8 } }
+                        },
+                        x: {
+                            ticks: { font: { size: 8 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        annotation: {
+                            annotations: {
+                                uslLine: {
+                                    type: 'line', yMin: usl, yMax: usl,
+                                    borderColor: '#dc2626', borderWidth: 1.5,
+                                    label: { display: true, content: `USL ${usl}`, position: 'end', backgroundColor: '#dc2626', font: { size: 7.5 }, padding: 1.5 }
+                                },
+                                lslLine: {
+                                    type: 'line', yMin: lsl, yMax: lsl,
+                                    borderColor: '#dc2626', borderWidth: 1.5,
+                                    label: { display: true, content: `LSL ${lsl}`, position: 'end', backgroundColor: '#dc2626', font: { size: 7.5 }, padding: 1.5 }
+                                },
+                                uclLine: {
+                                    type: 'line', yMin: part.uclX, yMax: part.uclX,
+                                    borderColor: '#d97706', borderWidth: 1.2, borderDash: [5, 3],
+                                    label: { display: true, content: `UCL ${part.uclX}`, position: 'start', backgroundColor: '#d97706', font: { size: 7.5 }, padding: 1.5 }
+                                },
+                                lclLine: {
+                                    type: 'line', yMin: part.lclX, yMax: part.lclX,
+                                    borderColor: '#d97706', borderWidth: 1.2, borderDash: [5, 3],
+                                    label: { display: true, content: `LCL ${part.lclX}`, position: 'start', backgroundColor: '#d97706', font: { size: 7.5 }, padding: 1.5 }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const ctxR = document.getElementById('rChart').getContext('2d');
+            rChartInstance = new Chart(ctxR, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Range (R)',
+                        data: rData,
+                        borderColor: '#6d28d9',
+                        borderWidth: 1.6,
+                        pointBackgroundColor: rPointColors,
+                        pointBorderColor: rPointColors,
+                        pointRadius: 3.5,
+                        tension: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        y: {
+                            min: 0,
+                            suggestedMax: Math.max(part.uclR * 1.35, 1),
+                            ticks: { font: { size: 8 } }
+                        },
+                        x: {
+                            ticks: { font: { size: 8 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        annotation: {
+                            annotations: {
+                                uclRLine: {
+                                    type: 'line', yMin: part.uclR, yMax: part.uclR,
+                                    borderColor: '#dc2626', borderWidth: 1.5, borderDash: [5, 3],
+                                    label: { display: true, content: `UCL_R ${part.uclR}`, position: 'end', backgroundColor: '#dc2626', font: { size: 7.5 }, padding: 1.5 }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // 10. MEASUREMENT CRUD OPERATIONS
+        // ==========================================
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const part = partConfigs[currentPartIndex];
+            const editId = document.getElementById('editRecordId').value;
+
+            const samples = [
+                parseFloat(document.getElementById('x1').value),
+                parseFloat(document.getElementById('x2').value),
+                parseFloat(document.getElementById('x3').value),
+                parseFloat(document.getElementById('x4').value),
+                parseFloat(document.getElementById('x5').value)
+            ];
+
+            const recordData = {
+                id: editId || 'REC-' + Date.now(),
+                partCode: part.code,
+                date: document.getElementById('prodDate').value,
+                slot: document.getElementById('checkSlot').value,
+                dept: document.getElementById('inspectorDept').value,
+                inspector: document.getElementById('inspectorName').value.trim(),
+                lotNo: document.getElementById('lotNo').value.trim(),
+                samples: samples,
+                action: null
+            };
+
+            if (editId) {
+                const idx = spcRecords.findIndex(r => r.id === editId);
+                if (idx !== -1) {
+                    recordData.action = spcRecords[idx].action;
+                    spcRecords[idx] = recordData;
+                }
+            } else {
+                spcRecords.push(recordData);
+            }
+
+            saveAllToStorage();
+            resetForm();
+            renderTabs();
+            renderAllSections();
+
+            const stats = calculateStats(samples, part);
+            if (stats.isOut && !recordData.action) {
+                setTimeout(() => openActionModal(recordData.id), 250);
+            }
+        }
+
+        function editRecord(id) {
+            const rec = spcRecords.find(r => r.id === id);
+            if (!rec) return;
+
+            document.getElementById('editRecordId').value = rec.id;
+            document.getElementById('prodDate').value = rec.date;
+            document.getElementById('checkSlot').value = rec.slot;
+            document.getElementById('inspectorDept').value = rec.dept;
+            document.getElementById('inspectorName').value = rec.inspector;
+            document.getElementById('lotNo').value = rec.lotNo;
+
+            document.getElementById('x1').value = rec.samples[0];
+            document.getElementById('x2').value = rec.samples[1];
+            document.getElementById('x3').value = rec.samples[2];
+            document.getElementById('x4').value = rec.samples[3];
+            document.getElementById('x5').value = rec.samples[4];
+
+            document.getElementById('formTitle').textContent = `กำลังแก้ไขข้อมูล (${rec.date} - ${rec.slot})`;
+            document.getElementById('btnSubmitForm').innerHTML = `<i class="fa-solid fa-check mr-1"></i> อัปเดตข้อมูล`;
+            document.getElementById('btnSubmitForm').classList.replace('bg-blue-700', 'bg-amber-600');
+            document.getElementById('btnCancelEdit').classList.remove('hidden');
+
+            document.getElementById('spcForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function deleteRecord(id) {
+            if (confirm('ยืนยันการลบข้อมูลการตรวจวัดรายการนี้ใช่หรือไม่?')) {
+                spcRecords = spcRecords.filter(r => r.id !== id);
+                saveAllToStorage();
+                renderTabs();
+                renderAllSections();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('spcForm').reset();
+            document.getElementById('editRecordId').value = '';
+            document.getElementById('prodDate').valueAsDate = new Date();
+            document.getElementById('formTitle').textContent = 'บันทึกผลการตรวจสอบประจำวัน (4 ครั้ง/วัน - IATF 16949)';
+            document.getElementById('btnSubmitForm').innerHTML = `<i class="fa-solid fa-save mr-1"></i> บันทึกข้อมูลการตรวจ`;
+            document.getElementById('btnSubmitForm').classList.replace('bg-amber-600', 'bg-blue-700');
+            document.getElementById('btnCancelEdit').classList.add('hidden');
+        }
+
+        // ==========================================
+        // 11. REACTION PLAN / ACTION MODAL LOGIC
+        // ==========================================
+        function openLatestActionModal() {
+            const latestId = document.getElementById('outOfControlBanner').dataset.latestId;
+            if (latestId) openActionModal(latestId);
+        }
+
+        function openActionModal(recordId) {
+            const rec = spcRecords.find(r => r.id === recordId);
+            const part = partConfigs[currentPartIndex];
+            const { usl, lsl } = getPartLimits(part);
+            if (!rec) return;
+
+            const stats = calculateStats(rec.samples, part);
+            document.getElementById('actionRecordId').value = rec.id;
+
+            document.getElementById('actionIssueSummary').innerHTML = `
+                <div><strong>Part Code:</strong> ${part.code} (${part.scItem})</div>
+                <div><strong>วันที่/รอบตรวจ:</strong> ${rec.date} | ${rec.slot} (Lot: ${rec.lotNo})</div>
+                <div><strong>ค่าที่วัดได้:</strong> X-bar = <span class="font-bold underline">${stats.xbar.toFixed(3)}</span> (Spec: ${lsl} - ${usl}), R = <span class="font-bold underline">${stats.r.toFixed(3)}</span> (Max: ${part.uclR})</div>
+                <div><strong>สาเหตุที่ระบบตรวจพบ:</strong> ${stats.reason}</div>
+            `;
+
+            if (rec.action) {
+                document.getElementById('actionRootCause').value = rec.action.rootCause;
+                document.getElementById('actionDetail').value = rec.action.detail;
+                document.getElementById('actionContainment').value = rec.action.containment;
+                document.getElementById('actionRecheckVal').value = rec.action.recheckVal;
+                document.getElementById('actionBy').value = rec.action.actionBy;
+                document.getElementById('actionVerifiedBy').value = rec.action.verifiedBy;
+            } else {
+                document.getElementById('actionForm').reset();
+                document.getElementById('actionRecordId').value = rec.id;
+            }
+
+            document.getElementById('actionModal').classList.remove('hidden');
+        }
+
+        function closeActionModal() {
+            document.getElementById('actionModal').classList.add('hidden');
+        }
+
+        function saveActionPlan(e) {
+            e.preventDefault();
+            const recordId = document.getElementById('actionRecordId').value;
+            const idx = spcRecords.findIndex(r => r.id === recordId);
+            if (idx === -1) return;
+
+            spcRecords[idx].action = {
+                rootCause: document.getElementById('actionRootCause').value,
+                detail: document.getElementById('actionDetail').value,
+                containment: document.getElementById('actionContainment').value,
+                recheckVal: document.getElementById('actionRecheckVal').value,
+                actionBy: document.getElementById('actionBy').value,
+                verifiedBy: document.getElementById('actionVerifiedBy').value,
+                timestamp: new Date().toLocaleString('th-TH')
+            };
+
+            saveAllToStorage();
+            closeActionModal();
+            renderTabs();
+            renderAllSections();
+        }
+
+        // ==========================================
+        // 12. DRAWING ATTACHMENT & VIEWER
+        // ==========================================
+        function handleDrawingUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const part = partConfigs[currentPartIndex];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                partDrawings[part.code] = {
+                    name: file.name,
+                    type: file.type,
+                    dataUrl: e.target.result
+                };
+                try {
+                    localStorage.setItem('hanon_spc_drawings_v4', JSON.stringify(partDrawings));
+                } catch (err) {
+                    alert("ไฟล์ขนาดใหญ่เกินกว่าจะบันทึกลง LocalStorage ถาวร แต่สามารถเปิดดูในเซสชันนี้ได้ทันที");
+                }
+                updateDrawingUI();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateDrawingUI() {
+            const part = partConfigs[currentPartIndex];
+            const drawing = partDrawings[part.code];
+            const nameEl = document.getElementById('drawingFileName');
+            const viewBtn = document.getElementById('btnViewDrawing');
+
+            if (drawing) {
+                nameEl.textContent = drawing.name;
+                nameEl.classList.add('text-blue-700', 'font-semibold');
+                viewBtn.disabled = false;
+            } else {
+                nameEl.textContent = "ยังไม่แนบ Drawing";
+                nameEl.classList.remove('text-blue-700', 'font-semibold');
+                viewBtn.disabled = true;
+            }
+        }
+
+        function openDrawingModal() {
+            const part = partConfigs[currentPartIndex];
+            const drawing = partDrawings[part.code];
+            if (!drawing) return;
+
+            document.getElementById('drawingModalTitle').textContent = `Drawing Reference: ${part.code} - ${drawing.name}`;
+            const container = document.getElementById('drawingViewerContainer');
+
+            if (drawing.type.includes('pdf')) {
+                container.innerHTML = `<iframe src="${drawing.dataUrl}" class="w-full h-full rounded border-0"></iframe>`;
+            } else {
+                container.innerHTML = `<img src="${drawing.dataUrl}" alt="Drawing" class="max-w-full max-h-full object-contain shadow-lg rounded">`;
+            }
+
+            document.getElementById('drawingModal').classList.remove('hidden');
+        }
+
+        function closeDrawingModal() {
+            document.getElementById('drawingModal').classList.add('hidden');
+        }
+
+        // ==========================================
+        // 13. EXPORT TO CSV (IATF 16949 RECORD)
+        // ==========================================
+        function exportToCSV() {
+            const part = partConfigs[currentPartIndex];
+            const { usl, lsl } = getPartLimits(part);
+            const filtered = spcRecords.filter(r => r.partCode === part.code);
+
+            let csv = "\uFEFF";
+            csv += `Doc No,${companySettings.docNo},Rev Date,${companySettings.revDate},Rev,${companySettings.revNo}\n`;
+            csv += `Part Code,${part.code},Part Name,${part.name},Spec,${part.nominal} (+${part.plusTol}/-${part.minusTol}),USL,${usl},LSL,${lsl},UCL_X,${part.uclX},LCL_X,${part.lclX},UCL_R,${part.uclR}\n\n`;
+            csv += `Production Date,Check Slot (4/Day),Lot No,Department,Inspector,X1,X2,X3,X4,X5,X-bar,Range (R),Status,Root Cause,Corrective Action,Containment,Re-check Value,Action By,QC Verified By\n`;
+
+            filtered.forEach(r => {
+                const stats = calculateStats(r.samples, part);
+                const status = stats.isOut ? "OUT OF CONTROL/SPEC" : "IN-CONTROL";
+                const act = r.action || {};
+                const row = [
+                    r.date, r.slot, r.lotNo, r.dept, r.inspector,
+                    ...r.samples, stats.xbar, stats.r, status,
+                    act.rootCause || "-", act.detail || "-", act.containment || "-",
+                    act.recheckVal || "-", act.actionBy || "-", act.verifiedBy || "-"
+                ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(",");
+                csv += row + "\n";
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `${companySettings.docNo}_SPC_${part.code}_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+        }
+    </script>
+</body>
+</html>
